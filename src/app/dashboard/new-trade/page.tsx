@@ -1,6 +1,6 @@
 'use client';
 
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -25,6 +24,14 @@ import { useUser } from '@/firebase/provider';
 import { firestore } from '@/firebase/config';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 
 const tradeSchema = z.object({
   ticker: z.string().min(1, 'Simbol/Ticker tidak boleh kosong'),
@@ -48,13 +55,7 @@ type TradeFormData = z.infer<typeof tradeSchema>;
 export default function NewTradePage() {
   const { toast } = useToast();
   const { user } = useUser();
-  const {
-    register,
-    handleSubmit,
-    control,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<TradeFormData>({
+  const form = useForm<TradeFormData>({
     resolver: zodResolver(tradeSchema),
     defaultValues: {
       assetType: 'Saham',
@@ -62,8 +63,16 @@ export default function NewTradePage() {
       commission: 0,
       executionRating: 5,
       strategy: 'Breakout',
+      journalNotes: '',
+      ticker: '',
     },
   });
+
+  const {
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = form;
 
   const onSubmit = async (data: TradeFormData) => {
     if (!user) {
@@ -114,244 +123,241 @@ export default function NewTradePage() {
           <CardTitle>Detail Transaksi</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Simbol/Ticker */}
-              <div className="grid gap-2">
-                <Label htmlFor="ticker">Simbol/Ticker</Label>
-                <Input id="ticker" {...register('ticker')} />
-                {errors.ticker && (
-                  <p className="text-sm text-destructive">
-                    {errors.ticker.message}
-                  </p>
-                )}
-              </div>
+          <Form {...form}>
+            <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <FormField
+                  control={form.control}
+                  name="ticker"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Simbol/Ticker</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              {/* Tipe Aset */}
-              <div className="grid gap-2">
-                <Label htmlFor="assetType">Tipe Aset</Label>
-                <Controller
+                <FormField
+                  control={form.control}
                   name="assetType"
-                  control={control}
                   render={({ field }) => (
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih tipe aset" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Saham">Saham</SelectItem>
-                        <SelectItem value="Kripto">Kripto</SelectItem>
-                        <SelectItem value="Forex">Forex</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormItem>
+                      <FormLabel>Tipe Aset</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Pilih tipe aset" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Saham">Saham</SelectItem>
+                          <SelectItem value="Kripto">Kripto</SelectItem>
+                          <SelectItem value="Forex">Forex</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
                   )}
                 />
-              </div>
 
-              {/* Arah Posisi */}
-              <div className="grid gap-2">
-                <Label htmlFor="position">Arah Posisi</Label>
-                <Controller
+                <FormField
+                  control={form.control}
                   name="position"
-                  control={control}
                   render={({ field }) => (
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih arah posisi" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Long">Long</SelectItem>
-                        <SelectItem value="Short">Short</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormItem>
+                      <FormLabel>Arah Posisi</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Pilih arah posisi" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Long">Long</SelectItem>
+                          <SelectItem value="Short">Short</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
                   )}
                 />
-              </div>
 
-              {/* Tanggal & Waktu Buka */}
-              <div className="grid gap-2">
-                <Label htmlFor="openDate">Tanggal & Waktu Buka</Label>
-                <Input
-                  id="openDate"
-                  type="datetime-local"
-                  {...register('openDate')}
+                <FormField
+                  control={form.control}
+                  name="openDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tanggal & Waktu Buka</FormLabel>
+                      <FormControl>
+                        <Input type="datetime-local" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                {errors.openDate && (
-                  <p className="text-sm text-destructive">
-                    {errors.openDate.message}
-                  </p>
-                )}
-              </div>
 
-              {/* Tanggal & Waktu Tutup */}
-              <div className="grid gap-2">
-                <Label htmlFor="closeDate">Tanggal & Waktu Tutup</Label>
-                <Input
-                  id="closeDate"
-                  type="datetime-local"
-                  {...register('closeDate')}
+                <FormField
+                  control={form.control}
+                  name="closeDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tanggal & Waktu Tutup</FormLabel>
+                      <FormControl>
+                        <Input type="datetime-local" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                {errors.closeDate && (
-                  <p className="text-sm text-destructive">
-                    {errors.closeDate.message}
-                  </p>
-                )}
-              </div>
 
-              {/* Harga Masuk */}
-              <div className="grid gap-2">
-                <Label htmlFor="entryPrice">Harga Masuk</Label>
-                <Input
-                  id="entryPrice"
-                  type="number"
-                  step="any"
-                  {...register('entryPrice')}
+                <FormField
+                  control={form.control}
+                  name="entryPrice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Harga Masuk</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="any" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                {errors.entryPrice && (
-                  <p className="text-sm text-destructive">
-                    {errors.entryPrice.message}
-                  </p>
-                )}
-              </div>
 
-              {/* Harga Keluar */}
-              <div className="grid gap-2">
-                <Label htmlFor="exitPrice">Harga Keluar</Label>
-                <Input
-                  id="exitPrice"
-                  type="number"
-                  step="any"
-                  {...register('exitPrice')}
+                <FormField
+                  control={form.control}
+                  name="exitPrice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Harga Keluar</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="any" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                {errors.exitPrice && (
-                  <p className="text-sm text-destructive">
-                    {errors.exitPrice.message}
-                  </p>
-                )}
-              </div>
 
-              {/* Ukuran Posisi */}
-              <div className="grid gap-2">
-                <Label htmlFor="positionSize">Ukuran Posisi</Label>
-                <Input
-                  id="positionSize"
-                  type="number"
-                  step="any"
-                  {...register('positionSize')}
+                <FormField
+                  control={form.control}
+                  name="positionSize"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ukuran Posisi</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="any" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                {errors.positionSize && (
-                  <p className="text-sm text-destructive">
-                    {errors.positionSize.message}
-                  </p>
-                )}
-              </div>
 
-              {/* Komisi & Biaya */}
-              <div className="grid gap-2">
-                <Label htmlFor="commission">Komisi & Biaya</Label>
-                <Input
-                  id="commission"
-                  type="number"
-                  step="any"
-                  {...register('commission')}
+                <FormField
+                  control={form.control}
+                  name="commission"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Komisi & Biaya</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="any" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                {errors.commission && (
-                  <p className="text-sm text-destructive">
-                    {errors.commission.message}
-                  </p>
-                )}
-              </div>
 
-              {/* Strategi/Setup */}
-              <div className="grid gap-2">
-                <Label htmlFor="strategy">Strategi/Setup</Label>
-                <Controller
+                <FormField
+                  control={form.control}
                   name="strategy"
-                  control={control}
                   render={({ field }) => (
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih strategi" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Breakout">Breakout</SelectItem>
-                        <SelectItem value="Support/Resistance">
-                          Support/Resistance
-                        </SelectItem>
-                        <SelectItem value="Trend Following">
-                          Trend Following
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </div>
-
-              {/* Rating Eksekusi */}
-              <div className="grid gap-2">
-                <Label htmlFor="executionRating">Rating Eksekusi</Label>
-                <Controller
-                  name="executionRating"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      onValueChange={(v) => field.onChange(Number(v))}
-                      defaultValue={String(field.value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Beri rating 1-5" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[1, 2, 3, 4, 5].map((v) => (
-                          <SelectItem key={v} value={String(v)}>
-                            {v} Bintang
+                    <FormItem>
+                      <FormLabel>Strategi/Setup</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Pilih strategi" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Breakout">Breakout</SelectItem>
+                          <SelectItem value="Support/Resistance">
+                            Support/Resistance
                           </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                          <SelectItem value="Trend Following">
+                            Trend Following
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
                   )}
                 />
-                {errors.executionRating && (
-                  <p className="text-sm text-destructive">
-                    {errors.executionRating.message}
-                  </p>
-                )}
+
+                <FormField
+                  control={form.control}
+                  name="executionRating"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Rating Eksekusi</FormLabel>
+                      <Select
+                        onValueChange={(v) => field.onChange(Number(v))}
+                        defaultValue={String(field.value)}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Beri rating 1-5" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {[1, 2, 3, 4, 5].map((v) => (
+                            <SelectItem key={v} value={String(v)}>
+                              {v} Bintang
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
-            </div>
 
-            {/* Catatan Jurnal */}
-            <div className="grid gap-2">
-              <Label htmlFor="journalNotes">Catatan Jurnal (Psikologi)</Label>
-              <Textarea
-                id="journalNotes"
-                {...register('journalNotes')}
-                rows={4}
-              />
-              {errors.journalNotes && (
-                <p className="text-sm text-destructive">
-                  {errors.journalNotes.message}
-                </p>
-              )}
-            </div>
-
-            <div className="flex justify-end">
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <FormField
+                control={form.control}
+                name="journalNotes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Catatan Jurnal (Psikologi)</FormLabel>
+                    <FormControl>
+                      <Textarea rows={4} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-                Simpan Trade
-              </Button>
-            </div>
-          </form>
+              />
+
+              <div className="flex justify-end">
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  Simpan Trade
+                </Button>
+              </div>
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>
