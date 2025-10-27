@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
 import { firestore } from '@/firebase/config';
@@ -103,7 +103,7 @@ const formatDate = (date: Timestamp) => {
   });
 };
 
-const RenderRating = ({ rating }: { rating: number }) => {
+const RenderRating = memo(({ rating }: { rating: number }) => {
   return (
     <div className="flex items-center gap-1">
       {Array.from({ length: 5 }).map((_, i) => (
@@ -119,7 +119,52 @@ const RenderRating = ({ rating }: { rating: number }) => {
       ))}
     </div>
   );
-};
+});
+RenderRating.displayName = 'RenderRating';
+
+
+const MemoizedTableRow = memo(({ trade, onRowClick }: { trade: Trade, onRowClick: (trade: Trade) => void }) => {
+  const pnl = calculatePnL(trade);
+  const isProfit = pnl >= 0;
+
+  return (
+    <TableRow
+      className="cursor-pointer"
+      onClick={() => onRowClick(trade)}
+    >
+      <TableCell>{formatDate(trade.closeDate)}</TableCell>
+      <TableCell className="font-medium">
+        {trade.ticker}
+      </TableCell>
+      <TableCell>
+        <Badge
+          variant={
+            trade.position === 'Long'
+              ? 'default'
+              : 'destructive'
+          }
+          className={cn(
+            trade.position === 'Long'
+              ? 'bg-green-600'
+              : 'bg-red-600',
+            'text-white hover:bg-green-700 hover:bg-red-700'
+          )}
+        >
+          {trade.position}
+        </Badge>
+      </TableCell>
+      <TableCell
+        className={cn(
+          'text-right font-mono',
+          isProfit ? 'text-green-400' : 'text-red-400'
+        )}
+      >
+        {formatCurrency(pnl)}
+      </TableCell>
+    </TableRow>
+  );
+});
+MemoizedTableRow.displayName = 'MemoizedTableRow';
 
 export default function TradeHistoryPage() {
   const { user } = useUser();
@@ -223,47 +268,9 @@ export default function TradeHistoryPage() {
                   </TableRow>
                 ))
               ) : trades && trades.length > 0 ? (
-                trades.map((trade) => {
-                  const pnl = calculatePnL(trade);
-                  const isProfit = pnl >= 0;
-                  return (
-                    <TableRow
-                      key={trade.id}
-                      className="cursor-pointer"
-                      onClick={() => handleRowClick(trade)}
-                    >
-                      <TableCell>{formatDate(trade.closeDate)}</TableCell>
-                      <TableCell className="font-medium">
-                        {trade.ticker}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            trade.position === 'Long'
-                              ? 'default'
-                              : 'destructive'
-                          }
-                          className={cn(
-                            trade.position === 'Long'
-                              ? 'bg-green-600'
-                              : 'bg-red-600',
-                            'text-white hover:bg-green-700 hover:bg-red-700'
-                          )}
-                        >
-                          {trade.position}
-                        </Badge>
-                      </TableCell>
-                      <TableCell
-                        className={cn(
-                          'text-right font-mono',
-                          isProfit ? 'text-green-400' : 'text-red-400'
-                        )}
-                      >
-                        {formatCurrency(pnl)}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
+                trades.map((trade) => (
+                  <MemoizedTableRow key={trade.id} trade={trade} onRowClick={handleRowClick} />
+                ))
               ) : (
                 <TableRow>
                   <TableCell colSpan={4} className="h-24 text-center">
