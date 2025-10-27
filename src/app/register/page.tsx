@@ -17,26 +17,40 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Logo from '@/components/logo';
 import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
   const auth = getAuth();
 
   const handleSignUp = async () => {
+    setIsLoading(true);
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       // You might want to also save the user's name to Firestore here
       router.push('/dashboard');
     } catch (error: any) {
+      let description = error.message;
+      if (error.code === 'auth/network-request-failed') {
+        description =
+          'Gagal terhubung ke server. Periksa koneksi internet Anda.';
+      } else if (error.code === 'auth/email-already-in-use') {
+        description = 'Email ini sudah terdaftar. Silakan gunakan email lain.';
+      } else if (error.code === 'auth/weak-password') {
+        description = 'Password terlalu lemah. Gunakan minimal 6 karakter.';
+      }
       toast({
         variant: 'destructive',
         title: 'Registrasi Gagal',
-        description: error.message,
+        description,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -59,6 +73,7 @@ export default function RegisterPage() {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
+              disabled={isLoading}
             />
           </div>
           <div className="grid gap-2">
@@ -70,6 +85,7 @@ export default function RegisterPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={isLoading}
             />
           </div>
           <div className="grid gap-2">
@@ -80,16 +96,29 @@ export default function RegisterPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading}
             />
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-          <Button className="w-full" onClick={handleSignUp}>
+          <Button
+            className="w-full"
+            onClick={handleSignUp}
+            disabled={isLoading}
+          >
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Buat akun
           </Button>
           <div className="text-center text-sm">
             Sudah punya akun?{' '}
-            <Link href="/login" className="underline">
+            <Link
+              href="/login"
+              className={
+                isLoading
+                  ? 'pointer-events-none text-muted-foreground'
+                  : 'underline'
+              }
+            >
               Sign in
             </Link>
           </div>

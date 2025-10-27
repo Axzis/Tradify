@@ -17,24 +17,39 @@ import { Label } from '@/components/ui/label';
 import Logo from '@/components/logo';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
   const auth = getAuth();
 
   const handleLogin = async () => {
+    setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/dashboard');
     } catch (error: any) {
+      let description = error.message;
+      if (error.code === 'auth/network-request-failed') {
+        description =
+          'Gagal terhubung ke server. Periksa koneksi internet Anda.';
+      } else if (
+        error.code === 'auth/wrong-password' ||
+        error.code === 'auth/user-not-found'
+      ) {
+        description = 'Email atau password yang Anda masukkan salah.';
+      }
       toast({
         variant: 'destructive',
         title: 'Login Gagal',
-        description: error.message,
+        description,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -58,6 +73,7 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={isLoading}
             />
           </div>
           <div className="grid gap-2">
@@ -68,16 +84,29 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading}
             />
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-          <Button className="w-full" onClick={handleLogin}>
+          <Button
+            className="w-full"
+            onClick={handleLogin}
+            disabled={isLoading}
+          >
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Sign in
           </Button>
           <div className="text-center text-sm">
             Belum punya akun?{' '}
-            <Link href="/register" className="underline">
+            <Link
+              href="/register"
+              className={
+                isLoading
+                  ? 'pointer-events-none text-muted-foreground'
+                  : 'underline'
+              }
+            >
               Sign up
             </Link>
           </div>

@@ -115,10 +115,18 @@ export default function NewTradePage() {
       });
       reset();
     } catch (error: any) {
+      let description = error.message;
+      if (error.code === 'permission-denied') {
+        description =
+          'Anda tidak memiliki izin untuk menyimpan data. Pastikan Anda login dengan benar.';
+      } else if (error.code === 'unavailable') {
+        description =
+          'Layanan tidak tersedia. Periksa koneksi internet Anda atau coba lagi nanti.';
+      }
       toast({
         variant: 'destructive',
         title: 'Gagal Menyimpan Trade',
-        description: error.message,
+        description,
       });
     }
   };
