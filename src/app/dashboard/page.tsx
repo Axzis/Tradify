@@ -221,7 +221,7 @@ export default function DashboardPage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             {renderKpiCards()}
           </div>
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
              <Card className="col-span-1 lg:col-span-4">
                 <CardHeader>
                   <CardTitle>Kurva Ekuitas</CardTitle>
@@ -273,8 +273,8 @@ export default function DashboardPage() {
         </h1>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">{renderKpiCards()}</div>
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-1 md:col-span-1 lg:col-span-4">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
+        <Card className="col-span-1 lg:col-span-4">
           <CardHeader>
             <CardTitle>Kurva Ekuitas</CardTitle>
           </CardHeader>
@@ -309,7 +309,7 @@ export default function DashboardPage() {
             </ChartContainer>
           </CardContent>
         </Card>
-        <Card className="col-span-1 md:col-span-1 lg:col-span-3">
+        <Card className="col-span-1 lg:col-span-3">
           <CardHeader>
             <CardTitle>P&L per Aset</CardTitle>
           </CardHeader>
