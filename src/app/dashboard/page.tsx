@@ -27,7 +27,7 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
-  Cell
+  Cell,
 } from 'recharts';
 import {
   ChartContainer,
@@ -77,8 +77,18 @@ const KPI_CARDS = [
     icon: Wallet,
     format: formatCurrency,
   },
-  { title: 'Win Rate', key: 'winRate', icon: Percent, format: (v:number) => `${v.toFixed(2)}%` },
-  { title: 'Profit Factor', key: 'profitFactor', icon: Goal, format: (v:number) => v.toFixed(2) },
+  {
+    title: 'Win Rate',
+    key: 'winRate',
+    icon: Percent,
+    format: (v: number) => `${v.toFixed(2)}%`,
+  },
+  {
+    title: 'Profit Factor',
+    key: 'profitFactor',
+    icon: Goal,
+    format: (v: number) => v.toFixed(2),
+  },
   {
     title: 'Rata-rata Kemenangan',
     key: 'avgWin',
@@ -143,8 +153,7 @@ export default function DashboardPage() {
     const winningTrades = tradesWithPnl.filter((t) => t.pnl > 0);
     const losingTrades = tradesWithPnl.filter((t) => t.pnl <= 0);
 
-    const winRate =
-      (winningTrades.length / trades.length) * 100;
+    const winRate = (winningTrades.length / trades.length) * 100;
 
     const grossProfit = winningTrades.reduce((sum, t) => sum + t.pnl, 0);
     const grossLoss = Math.abs(losingTrades.reduce((sum, t) => sum + t.pnl, 0));
@@ -155,7 +164,7 @@ export default function DashboardPage() {
       winningTrades.length > 0 ? grossProfit / winningTrades.length : 0;
     const avgLoss =
       losingTrades.length > 0 ? grossLoss / losingTrades.length : 0;
-      
+
     // Simplified RRR calculation for example purposes
     const avgRiskReward = avgLoss > 0 ? avgWin / avgLoss : Infinity;
 
@@ -221,7 +230,7 @@ export default function DashboardPage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             {renderKpiCards()}
           </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+          <div className="grid gap-4 mt-4 md:grid-cols-2 lg:grid-cols-7">
             <Card className="col-span-1 md:col-span-2 lg:col-span-4">
               <CardHeader>
                 <CardTitle>Kurva Ekuitas</CardTitle>
@@ -241,7 +250,7 @@ export default function DashboardPage() {
           </div>
         </>
       ) : !trades || trades.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm h-64">
+        <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm h-64 mt-4">
           <div className="flex flex-col items-center gap-1 text-center">
             <h3 className="text-2xl font-bold tracking-tight">
               Belum ada data trade
@@ -256,7 +265,7 @@ export default function DashboardPage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             {renderKpiCards()}
           </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+          <div className="grid gap-4 mt-4 md:grid-cols-2 lg:grid-cols-7">
             <Card className="col-span-1 md:col-span-2 lg:col-span-4">
               <CardHeader>
                 <CardTitle>Kurva Ekuitas</CardTitle>
@@ -309,9 +318,7 @@ export default function DashboardPage() {
                         axisLine={false}
                         tickMargin={8}
                       />
-                      <YAxis
-                        tickFormatter={(value) => formatCurrency(value)}
-                      />
+                      <YAxis tickFormatter={(value) => formatCurrency(value)} />
                       <Tooltip
                         cursor={false}
                         content={

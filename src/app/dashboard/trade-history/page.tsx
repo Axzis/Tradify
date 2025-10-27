@@ -3,12 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useUser } from '@/firebase/provider';
 import { firestore } from '@/firebase/config';
-import {
-  collection,
-  query,
-  orderBy,
-  Timestamp,
-} from 'firebase/firestore';
+import { collection, query, orderBy, Timestamp } from 'firebase/firestore';
 import useCollection from '@/hooks/use-collection';
 import {
   Table,
@@ -95,14 +90,15 @@ const RenderRating = ({ rating }: { rating: number }) => {
           key={i}
           className={cn(
             'h-4 w-4',
-            i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground'
+            i < rating
+              ? 'text-yellow-400 fill-yellow-400'
+              : 'text-muted-foreground'
           )}
         />
       ))}
     </div>
   );
 };
-
 
 export default function TradeHistoryPage() {
   const { user } = useUser();
@@ -119,29 +115,29 @@ export default function TradeHistoryPage() {
   const { data: trades, loading } = useCollection<Trade>(tradesQuery);
 
   return (
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center">
-          <h1 className="text-lg font-semibold md:text-2xl font-headline">
-            Riwayat Trade
-          </h1>
-        </div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Transaksi Anda</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Tanggal Tutup</TableHead>
-                  <TableHead>Simbol</TableHead>
-                  <TableHead>Arah</TableHead>
-                  <TableHead className="text-right">P&L (Bersih)</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  Array.from({ length: 5 }).map((_, index) => (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center">
+        <h1 className="text-lg font-semibold md:text-2xl font-headline">
+          Riwayat Trade
+        </h1>
+      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Transaksi Anda</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Tanggal Tutup</TableHead>
+                <TableHead>Simbol</TableHead>
+                <TableHead>Arah</TableHead>
+                <TableHead className="text-right">P&L (Bersih)</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading
+                ? Array.from({ length: 5 }).map((_, index) => (
                     <TableRow key={index}>
                       <TableCell>
                         <Skeleton className="h-4 w-[150px]" />
@@ -157,8 +153,8 @@ export default function TradeHistoryPage() {
                       </TableCell>
                     </TableRow>
                   ))
-                ) : trades && trades.length > 0 ? (
-                  trades.map((trade) => {
+                : trades && trades.length > 0
+                ? trades.map((trade) => {
                     const pnl = calculatePnL(trade);
                     const isProfit = pnl >= 0;
                     return (
@@ -203,44 +199,104 @@ export default function TradeHistoryPage() {
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-lg">
                           <DialogHeader>
-                            <DialogTitle>Detail Trade: {trade.ticker}</DialogTitle>
+                            <DialogTitle>
+                              Detail Trade: {trade.ticker}
+                            </DialogTitle>
                             <DialogDescription>
-                              {formatDate(trade.openDate)} - {formatDate(trade.closeDate)}
+                              {formatDate(trade.openDate)} -{' '}
+                              {formatDate(trade.closeDate)}
                             </DialogDescription>
                           </DialogHeader>
                           <div className="grid gap-4 py-4 text-sm">
                             <div className="grid grid-cols-2 gap-4">
-                              <div><span className="text-muted-foreground">P&L Bersih:</span> <span className={cn(calculatePnL(trade) >= 0 ? 'text-green-400' : 'text-red-400', 'font-semibold')}>{formatCurrency(calculatePnL(trade))}</span></div>
-                              <div><span className="text-muted-foreground">Tipe Aset:</span> {trade.assetType}</div>
-                              <div><span className="text-muted-foreground">Arah:</span> {trade.position}</div>
-                              <div><span className="text-muted-foreground">Strategi:</span> <Badge variant="secondary">{trade.strategy || 'N/A'}</Badge></div>
-                              <div><span className="text-muted-foreground">Rating:</span> <RenderRating rating={trade.executionRating || 0} /></div>
+                              <div>
+                                <span className="text-muted-foreground">
+                                  P&L Bersih:{' '}
+                                </span>
+                                <span
+                                  className={cn(
+                                    calculatePnL(trade) >= 0
+                                      ? 'text-green-400'
+                                      : 'text-red-400',
+                                    'font-semibold'
+                                  )}
+                                >
+                                  {formatCurrency(calculatePnL(trade))}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Tipe Aset:{' '}
+                                </span>{' '}
+                                {trade.assetType}
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Arah:{' '}
+                                </span>{' '}
+                                {trade.position}
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Strategi:{' '}
+                                </span>
+                                <Badge variant="secondary">
+                                  {trade.strategy || 'N/A'}
+                                </Badge>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Rating:{' '}
+                                </span>
+                                <RenderRating
+                                  rating={trade.executionRating || 0}
+                                />
+                              </div>
                             </div>
                             <div className="grid grid-cols-3 gap-4 border-t pt-4 mt-2">
-                              <div><span className="text-muted-foreground block">Harga Masuk</span> {formatCurrency(trade.entryPrice)}</div>
-                              <div><span className="text-muted-foreground block">Harga Keluar</span> {formatCurrency(trade.exitPrice)}</div>
-                              <div><span className="text-muted-foreground block">Ukuran Posisi</span> {trade.positionSize}</div>
+                              <div>
+                                <span className="text-muted-foreground block">
+                                  Harga Masuk
+                                </span>{' '}
+                                {formatCurrency(trade.entryPrice)}
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground block">
+                                  Harga Keluar
+                                </span>{' '}
+                                {formatCurrency(trade.exitPrice)}
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground block">
+                                  Ukuran Posisi
+                                </span>{' '}
+                                {trade.positionSize}
+                              </div>
                             </div>
                             <div className="border-t pt-4 mt-2">
-                              <h4 className="font-semibold mb-2">Catatan Jurnal (Psikologi)</h4>
-                              <p className="text-muted-foreground bg-secondary/50 p-3 rounded-md whitespace-pre-wrap">{trade.journalNotes || 'Tidak ada catatan.'}</p>
+                              <h4 className="font-semibold mb-2">
+                                Catatan Jurnal (Psikologi)
+                              </h4>
+                              <p className="text-muted-foreground bg-secondary/50 p-3 rounded-md whitespace-pre-wrap">
+                                {trade.journalNotes || 'Tidak ada catatan.'}
+                              </p>
                             </div>
                           </div>
                         </DialogContent>
                       </Dialog>
                     );
                   })
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
-                      Belum ada riwayat transaksi.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
+                : (
+                    <TableRow>
+                      <TableCell colSpan={4} className="h-24 text-center">
+                        Belum ada riwayat transaksi.
+                      </TableCell>
+                    </TableRow>
+                  )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
