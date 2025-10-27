@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useUser } from '@/firebase/provider';
 import { firestore } from '@/firebase/config';
-import { collection, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, Timestamp, doc, deleteDoc } from 'firebase/firestore';
 import useCollection from '@/hooks/use-collection';
 import {
   Table,
@@ -24,13 +24,16 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogDescription,
+  DialogFooter,
+  DialogTrigger,
 } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { Star } from 'lucide-react';
+import { Star, Trash, Pencil } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface Trade {
   id: string;
@@ -102,6 +105,8 @@ const RenderRating = ({ rating }: { rating: number }) => {
 
 export default function TradeHistoryPage() {
   const { user } = useUser();
+  const { toast } = useToast();
+  
   const tradesQuery = useMemo(
     () =>
       user
@@ -282,6 +287,16 @@ export default function TradeHistoryPage() {
                               </p>
                             </div>
                           </div>
+                          <DialogFooter>
+                            <Button variant="outline">
+                              <Pencil className="mr-2 h-4 w-4" />
+                              Edit
+                            </Button>
+                            <Button variant="destructive">
+                              <Trash className="mr-2 h-4 w-4" />
+                              Hapus
+                            </Button>
+                          </DialogFooter>
                         </DialogContent>
                       </Dialog>
                     );
