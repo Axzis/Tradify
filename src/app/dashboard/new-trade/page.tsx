@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase/provider';
 import { firestore } from '@/firebase/config';
@@ -34,6 +35,11 @@ const tradeSchema = z.object({
   exitPrice: z.coerce.number().positive('Harga keluar harus positif'),
   positionSize: z.coerce.number().positive('Ukuran posisi harus positif'),
   commission: z.coerce.number().min(0, 'Komisi tidak boleh negatif'),
+  strategy: z
+    .enum(['Breakout', 'Support/Resistance', 'Trend Following'])
+    .optional(),
+  journalNotes: z.string().optional(),
+  executionRating: z.coerce.number().min(1).max(5),
 });
 
 type TradeFormData = z.infer<typeof tradeSchema>;
@@ -53,6 +59,7 @@ export default function NewTradePage() {
       assetType: 'Saham',
       position: 'Long',
       commission: 0,
+      executionRating: 5,
     },
   });
 
@@ -142,7 +149,7 @@ export default function NewTradePage() {
               {/* Arah Posisi */}
               <div className="grid gap-2">
                 <Label htmlFor="position">Arah Posisi</Label>
-                 <Controller
+                <Controller
                   name="position"
                   control={control}
                   render={({ field }) => (
@@ -158,7 +165,7 @@ export default function NewTradePage() {
                   )}
                 />
               </div>
-              
+
               {/* Tanggal & Waktu Buka */}
               <div className="grid gap-2">
                 <Label htmlFor="openDate">Tanggal & Waktu Buka</Label>
@@ -173,7 +180,7 @@ export default function NewTradePage() {
                   </p>
                 )}
               </div>
-              
+
               {/* Tanggal & Waktu Tutup */}
               <div className="grid gap-2">
                 <Label htmlFor="closeDate">Tanggal & Waktu Tutup</Label>
@@ -236,7 +243,7 @@ export default function NewTradePage() {
                   </p>
                 )}
               </div>
-              
+
               {/* Komisi & Biaya */}
               <div className="grid gap-2">
                 <Label htmlFor="commission">Komisi & Biaya</Label>
@@ -252,10 +259,75 @@ export default function NewTradePage() {
                   </p>
                 )}
               </div>
+
+              {/* Strategi/Setup */}
+              <div className="grid gap-2">
+                <Label htmlFor="strategy">Strategi/Setup</Label>
+                <Controller
+                  name="strategy"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih strategi" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Breakout">Breakout</SelectItem>
+                        <SelectItem value="Support/Resistance">
+                          Support/Resistance
+                        </SelectItem>
+                        <SelectItem value="Trend Following">
+                          Trend Following
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+              
+              {/* Rating Eksekusi */}
+              <div className="grid gap-2">
+                <Label htmlFor="executionRating">Rating Eksekusi</Label>
+                <Controller
+                  name="executionRating"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={(v) => field.onChange(Number(v))} value={String(field.value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Beri rating 1-5" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5].map(v => (
+                           <SelectItem key={v} value={String(v)}>{v} Bintang</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                 {errors.executionRating && (
+                  <p className="text-sm text-destructive">
+                    {errors.executionRating.message}
+                  </p>
+                )}
+              </div>
             </div>
-            
+
+            {/* Catatan Jurnal */}
+            <div className="grid gap-2">
+                <Label htmlFor="journalNotes">Catatan Jurnal (Psikologi)</Label>
+                <Textarea id="journalNotes" {...register('journalNotes')} rows={4} />
+                 {errors.journalNotes && (
+                  <p className="text-sm text-destructive">
+                    {errors.journalNotes.message}
+                  </p>
+                )}
+            </div>
+
             <div className="flex justify-end">
-                <Button type="submit">Simpan Trade</Button>
+              <Button type="submit">Simpan Trade</Button>
             </div>
           </form>
         </CardContent>
