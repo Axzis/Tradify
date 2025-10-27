@@ -175,40 +175,29 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Form>
-              <FormField
-                // control={form.control}
-                name="theme"
-                render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <FormLabel>Tema Aplikasi</FormLabel>
+            <form>
+              <FormItem className="space-y-3">
+                <FormLabel>Tema Aplikasi</FormLabel>
+                <RadioGroup
+                  defaultValue="dark"
+                  className="flex flex-col space-y-1"
+                  disabled // Disabled until full theme provider is implemented
+                >
+                  <FormItem className="flex items-center space-x-3 space-y-0">
                     <FormControl>
-                      <RadioGroup
-                        // onValueChange={field.onChange}
-                        // defaultValue={field.value}
-                        defaultValue="dark"
-                        className="flex flex-col space-y-1"
-                        disabled // Disabled until full theme provider is implemented
-                      >
-                        <FormItem className="flex items-center space-x-3 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="light" />
-                          </FormControl>
-                          <FormLabel className="font-normal">Terang</FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-3 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="dark" />
-                          </FormControl>
-                          <FormLabel className="font-normal">Gelap</FormLabel>
-                        </FormItem>
-                      </RadioGroup>
+                      <RadioGroupItem value="light" />
                     </FormControl>
-                    <FormMessage />
+                    <FormLabel className="font-normal">Terang</FormLabel>
                   </FormItem>
-                )}
-              />
-            </Form>
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="dark" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Gelap</FormLabel>
+                  </FormItem>
+                </RadioGroup>
+              </FormItem>
+            </form>
           </CardContent>
         </Card>
       </div>
