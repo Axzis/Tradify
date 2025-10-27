@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useUser } from '@/firebase/provider';
+import { useUser } from '@/firebase';
 import {
   getAuth,
   updateProfile,

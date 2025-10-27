@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/firebase/provider';
+import { useUser } from '@/firebase';
 import { firestore } from '@/firebase/config';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { CalendarIcon, Loader2 } from 'lucide-react';

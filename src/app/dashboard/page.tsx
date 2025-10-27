@@ -1,16 +1,10 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useUser } from '@/firebase/provider';
+import { useUser } from '@/firebase';
 import { firestore } from '@/firebase/config';
-import {
-  collection,
-  query,
-  onSnapshot,
-  orderBy,
-  Timestamp,
-} from 'firebase/firestore';
-import useCollection from '@/hooks/use-collection';
+import { doc } from 'firebase/firestore';
+import { useDoc } from '@/firebase';
 import {
   Card,
   CardContent,
@@ -36,30 +30,16 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, TrendingDown, Percent, Wallet, Goal } from 'lucide-react';
 
-interface Trade {
-  id: string;
-  ticker: string;
-  position: 'Long' | 'Short';
-  exitPrice: number;
-  entryPrice: number;
-  positionSize: number;
-  commission: number;
-  closeDate: Timestamp;
-  createdAt: Timestamp;
+// This interface now represents the pre-calculated summary document
+interface TradeAnalyticsSummary {
+  totalNetPnl: number;
+  winRate: number;
+  profitFactor: number;
+  avgWin: number;
+  avgLoss: number;
+  equityCurve: { date: string; equity: number }[];
+  pnlPerAsset: { ticker: string; pnl: number }[];
 }
-
-const calculatePnL = (trade: Trade) => {
-  if (trade.position === 'Long') {
-    return (
-      (trade.exitPrice - trade.entryPrice) * trade.positionSize -
-      trade.commission
-    );
-  }
-  return (
-    (trade.entryPrice - trade.exitPrice) * trade.positionSize -
-    trade.commission
-  );
-};
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('id-ID', {
@@ -105,88 +85,18 @@ const KPI_CARDS = [
 
 export default function DashboardPage() {
   const { user } = useUser();
-  const tradesQuery = useMemo(
+  const analyticsDocRef = useMemo(
     () =>
       user
-        ? query(
-            collection(firestore, 'users', user.uid, 'trades'),
-            orderBy('createdAt', 'asc')
-          )
+        ? doc(firestore, 'users', user.uid, 'analytics', 'summary')
         : null,
     [user]
   );
-  const { data: trades, loading } = useCollection<Trade>(tradesQuery);
-
-  const analytics = useMemo(() => {
-    if (!trades || trades.length === 0) {
-      return {
-        totalNetPnl: 0,
-        winRate: 0,
-        profitFactor: 0,
-        avgWin: 0,
-        avgLoss: 0,
-        avgRiskReward: 0,
-        equityCurve: [],
-        pnlPerAsset: [],
-      };
-    }
-
-    const tradesWithPnl = trades.map((trade) => ({
-      ...trade,
-      pnl: calculatePnL(trade),
-    }));
-
-    let cumulativePnl = 0;
-    const equityCurve = tradesWithPnl.map((trade) => {
-      cumulativePnl += trade.pnl;
-      const closeDate = trade.closeDate.toDate();
-      return {
-        date: closeDate.toLocaleDateString('id-ID'),
-        equity: cumulativePnl,
-      };
-    });
-
-    const totalNetPnl = cumulativePnl;
-    const winningTrades = tradesWithPnl.filter((t) => t.pnl > 0);
-    const losingTrades = tradesWithPnl.filter((t) => t.pnl <= 0);
-
-    const winRate = (winningTrades.length / trades.length) * 100;
-
-    const grossProfit = winningTrades.reduce((sum, t) => sum + t.pnl, 0);
-    const grossLoss = Math.abs(losingTrades.reduce((sum, t) => sum + t.pnl, 0));
-
-    const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : Infinity;
-
-    const avgWin =
-      winningTrades.length > 0 ? grossProfit / winningTrades.length : 0;
-    const avgLoss =
-      losingTrades.length > 0 ? grossLoss / losingTrades.length : 0;
-
-    // Simplified RRR calculation for example purposes
-    const avgRiskReward = avgLoss > 0 ? avgWin / avgLoss : Infinity;
-
-    const pnlPerAsset = tradesWithPnl.reduce((acc, trade) => {
-      if (!acc[trade.ticker]) {
-        acc[trade.ticker] = { ticker: trade.ticker, pnl: 0 };
-      }
-      acc[trade.ticker].pnl += trade.pnl;
-      return acc;
-    }, {} as Record<string, { ticker: string; pnl: number }>);
-
-    return {
-      totalNetPnl,
-      winRate,
-      profitFactor,
-      avgWin,
-      avgLoss,
-      avgRiskReward,
-      equityCurve,
-      pnlPerAsset: Object.values(pnlPerAsset),
-    };
-  }, [trades]);
+  
+  const { data: analytics, loading } = useDoc<TradeAnalyticsSummary>(analyticsDocRef);
 
   const renderKpiCards = () => {
-    if (loading) {
+    if (loading || !analytics) {
       return KPI_CARDS.map((card) => (
         <Card key={card.key}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -208,7 +118,7 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {card.format((analytics as any)[card.key])}
+            {card.format((analytics as any)[card.key] || 0)}
           </div>
         </CardContent>
       </Card>
@@ -216,9 +126,9 @@ export default function DashboardPage() {
   };
 
   return (
-    <>
+    <div className="flex flex-1 flex-col gap-4">
       <div className="flex items-center">
-        <h1 className="text-lg font-semibold md:text-2xl font-headline">
+        <h1 className="text-lg font-semibold md:text-2xl">
           Dashboard
         </h1>
       </div>
@@ -246,7 +156,7 @@ export default function DashboardPage() {
             </Card>
           </div>
         </div>
-      ) : !trades || trades.length === 0 ? (
+      ) : !analytics || !analytics.equityCurve || analytics.equityCurve.length === 0 ? (
         <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm h-64 mt-4">
           <div className="flex flex-col items-center gap-1 text-center">
             <h3 className="text-2xl font-bold tracking-tight">
@@ -325,7 +235,7 @@ export default function DashboardPage() {
                         }
                       />
                       <Bar dataKey="pnl" radius={8}>
-                        {analytics.pnlPerAsset.map((entry, index) => (
+                        {analytics.pnlPerAsset && analytics.pnlPerAsset.map((entry, index) => (
                           <Cell
                             key={`cell-${index}`}
                             fill={
@@ -344,6 +254,6 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

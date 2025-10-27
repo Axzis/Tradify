@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/firebase/provider';
+import { useUser } from '@/firebase';
 import { firestore } from '@/firebase/config';
 import {
   collection,
@@ -184,99 +184,97 @@ export default function TradeHistoryPage() {
   };
 
   return (
-    <>
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center">
-          <h1 className="text-lg font-semibold md:text-2xl">
-            Riwayat Trade
-          </h1>
-        </div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Transaksi Anda</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Tanggal Tutup</TableHead>
-                  <TableHead>Simbol</TableHead>
-                  <TableHead>Arah</TableHead>
-                  <TableHead className="text-right">P&L (Bersih)</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  Array.from({ length: 5 }).map((_, index) => (
-                    <TableRow key={index}>
-                      <TableCell>
-                        <Skeleton className="h-4 w-[150px]" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-[80px]" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-[50px]" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Skeleton className="h-4 w-[100px] ml-auto" />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : trades && trades.length > 0 ? (
-                  trades.map((trade) => {
-                    const pnl = calculatePnL(trade);
-                    const isProfit = pnl >= 0;
-                    return (
-                      <TableRow
-                        key={trade.id}
-                        className="cursor-pointer"
-                        onClick={() => handleRowClick(trade)}
-                      >
-                        <TableCell>{formatDate(trade.closeDate)}</TableCell>
-                        <TableCell className="font-medium">
-                          {trade.ticker}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              trade.position === 'Long'
-                                ? 'default'
-                                : 'destructive'
-                            }
-                            className={cn(
-                              trade.position === 'Long'
-                                ? 'bg-green-600'
-                                : 'bg-red-600',
-                              'text-white hover:bg-green-700 hover:bg-red-700'
-                            )}
-                          >
-                            {trade.position}
-                          </Badge>
-                        </TableCell>
-                        <TableCell
-                          className={cn(
-                            'text-right font-mono',
-                            isProfit ? 'text-green-400' : 'text-red-400'
-                          )}
-                        >
-                          {formatCurrency(pnl)}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
-                      Belum ada riwayat transaksi.
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center">
+        <h1 className="text-lg font-semibold md:text-2xl">
+          Riwayat Trade
+        </h1>
+      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Transaksi Anda</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Tanggal Tutup</TableHead>
+                <TableHead>Simbol</TableHead>
+                <TableHead>Arah</TableHead>
+                <TableHead className="text-right">P&L (Bersih)</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                Array.from({ length: 5 }).map((_, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <Skeleton className="h-4 w-[150px]" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-[80px]" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-[50px]" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-4 w-[100px] ml-auto" />
                     </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
+                ))
+              ) : trades && trades.length > 0 ? (
+                trades.map((trade) => {
+                  const pnl = calculatePnL(trade);
+                  const isProfit = pnl >= 0;
+                  return (
+                    <TableRow
+                      key={trade.id}
+                      className="cursor-pointer"
+                      onClick={() => handleRowClick(trade)}
+                    >
+                      <TableCell>{formatDate(trade.closeDate)}</TableCell>
+                      <TableCell className="font-medium">
+                        {trade.ticker}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            trade.position === 'Long'
+                              ? 'default'
+                              : 'destructive'
+                          }
+                          className={cn(
+                            trade.position === 'Long'
+                              ? 'bg-green-600'
+                              : 'bg-red-600',
+                            'text-white hover:bg-green-700 hover:bg-red-700'
+                          )}
+                        >
+                          {trade.position}
+                        </Badge>
+                      </TableCell>
+                      <TableCell
+                        className={cn(
+                          'text-right font-mono',
+                          isProfit ? 'text-green-400' : 'text-red-400'
+                        )}
+                      >
+                        {formatCurrency(pnl)}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="h-24 text-center">
+                    Belum ada riwayat transaksi.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       {/* Detail Dialog */}
       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
@@ -404,6 +402,6 @@ export default function TradeHistoryPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }

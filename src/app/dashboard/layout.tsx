@@ -5,7 +5,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { getAuth, signOut } from 'firebase/auth';
-import { useUser } from '@/firebase/provider';
+import { useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import {
   LayoutGrid,
