@@ -176,27 +176,27 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             <form>
-              <FormItem className="space-y-3">
-                <FormLabel>Tema Aplikasi</FormLabel>
+              <div className="space-y-3">
+                <Label>Tema Aplikasi</Label>
                 <RadioGroup
                   defaultValue="dark"
                   className="flex flex-col space-y-1"
                   disabled // Disabled until full theme provider is implemented
                 >
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="light" />
-                    </FormControl>
-                    <FormLabel className="font-normal">Terang</FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="dark" />
-                    </FormControl>
-                    <FormLabel className="font-normal">Gelap</FormLabel>
-                  </FormItem>
+                  <div className="flex items-center space-x-3 space-y-0">
+                    <RadioGroupItem value="light" id="theme-light" />
+                    <Label htmlFor="theme-light" className="font-normal">
+                      Terang
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-3 space-y-0">
+                    <RadioGroupItem value="dark" id="theme-dark" />
+                    <Label htmlFor="theme-dark" className="font-normal">
+                      Gelap
+                    </Label>
+                  </div>
                 </RadioGroup>
-              </FormItem>
+              </div>
             </form>
           </CardContent>
         </Card>
