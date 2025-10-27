@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase/provider';
 import { firestore } from '@/firebase/config';
 import {
@@ -27,13 +28,22 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -82,6 +92,7 @@ const formatCurrency = (value: number) => {
 };
 
 const formatDate = (date: Timestamp) => {
+  if (!date) return 'N/A';
   const d = date.toDate();
   return d.toLocaleString('id-ID', {
     year: 'numeric',
@@ -112,10 +123,12 @@ const RenderRating = ({ rating }: { rating: number }) => {
 
 export default function TradeHistoryPage() {
   const { user } = useUser();
+  const router = useRouter();
   const { toast } = useToast();
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const tradesQuery = useMemo(
     () =>
@@ -131,10 +144,16 @@ export default function TradeHistoryPage() {
 
   const handleRowClick = (trade: Trade) => {
     setSelectedTrade(trade);
-    setIsDialogOpen(true);
+    setIsDetailDialogOpen(true);
   };
 
-  const handleDelete = async () => {
+  const handleEdit = () => {
+    if (!selectedTrade) return;
+    // Redirect to an edit page (to be created)
+    router.push(`/dashboard/edit-trade/${selectedTrade.id}`);
+  };
+
+  const handleDeleteConfirm = async () => {
     if (!user || !selectedTrade) return;
     setIsDeleting(true);
     try {
@@ -150,7 +169,8 @@ export default function TradeHistoryPage() {
         title: 'Sukses',
         description: 'Trade berhasil dihapus.',
       });
-      setIsDialogOpen(false);
+      setIsDeleteDialogOpen(false);
+      setIsDetailDialogOpen(false);
       setSelectedTrade(null);
     } catch (error: any) {
       toast({
@@ -164,101 +184,102 @@ export default function TradeHistoryPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center">
-        <h1 className="text-lg font-semibold md:text-2xl font-headline">
-          Riwayat Trade
-        </h1>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Transaksi Anda</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Tanggal Tutup</TableHead>
-                <TableHead>Simbol</TableHead>
-                <TableHead>Arah</TableHead>
-                <TableHead className="text-right">P&L (Bersih)</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                Array.from({ length: 5 }).map((_, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      <Skeleton className="h-4 w-[150px]" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-[80px]" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-[50px]" />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Skeleton className="h-4 w-[100px] ml-auto" />
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : trades && trades.length > 0 ? (
-                trades.map((trade) => {
-                  const pnl = calculatePnL(trade);
-                  const isProfit = pnl >= 0;
-                  return (
-                    <TableRow
-                      key={trade.id}
-                      className={cn(
-                        'cursor-pointer',
-                        isProfit ? 'bg-green-500/10' : 'bg-red-500/10'
-                      )}
-                      onClick={() => handleRowClick(trade)}
-                    >
-                      <TableCell>{formatDate(trade.closeDate)}</TableCell>
-                      <TableCell className="font-medium">
-                        {trade.ticker}
+    <>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center">
+          <h1 className="text-lg font-semibold md:text-2xl">
+            Riwayat Trade
+          </h1>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Transaksi Anda</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Tanggal Tutup</TableHead>
+                  <TableHead>Simbol</TableHead>
+                  <TableHead>Arah</TableHead>
+                  <TableHead className="text-right">P&L (Bersih)</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <Skeleton className="h-4 w-[150px]" />
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant={
-                            trade.position === 'Long'
-                              ? 'default'
-                              : 'destructive'
-                          }
-                          className={cn(
-                            trade.position === 'Long'
-                              ? 'bg-green-600'
-                              : 'bg-red-600',
-                            'text-white'
-                          )}
-                        >
-                          {trade.position}
-                        </Badge>
+                        <Skeleton className="h-4 w-[80px]" />
                       </TableCell>
-                      <TableCell
-                        className={cn(
-                          'text-right font-mono',
-                          isProfit ? 'text-green-400' : 'text-red-400'
-                        )}
-                      >
-                        {formatCurrency(pnl)}
+                      <TableCell>
+                        <Skeleton className="h-4 w-[50px]" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="h-4 w-[100px] ml-auto" />
                       </TableCell>
                     </TableRow>
-                  );
-                })
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
-                    Belum ada riwayat transaksi.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  ))
+                ) : trades && trades.length > 0 ? (
+                  trades.map((trade) => {
+                    const pnl = calculatePnL(trade);
+                    const isProfit = pnl >= 0;
+                    return (
+                      <TableRow
+                        key={trade.id}
+                        className="cursor-pointer"
+                        onClick={() => handleRowClick(trade)}
+                      >
+                        <TableCell>{formatDate(trade.closeDate)}</TableCell>
+                        <TableCell className="font-medium">
+                          {trade.ticker}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              trade.position === 'Long'
+                                ? 'default'
+                                : 'destructive'
+                            }
+                            className={cn(
+                              trade.position === 'Long'
+                                ? 'bg-green-600'
+                                : 'bg-red-600',
+                              'text-white hover:bg-green-700 hover:bg-red-700'
+                            )}
+                          >
+                            {trade.position}
+                          </Badge>
+                        </TableCell>
+                        <TableCell
+                          className={cn(
+                            'text-right font-mono',
+                            isProfit ? 'text-green-400' : 'text-red-400'
+                          )}
+                        >
+                          {formatCurrency(pnl)}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                      Belum ada riwayat transaksi.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Detail Dialog */}
+      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           {selectedTrade && (
             <>
@@ -325,30 +346,28 @@ export default function TradeHistoryPage() {
                     {selectedTrade.positionSize}
                   </div>
                 </div>
-                <div className="border-t pt-4 mt-2">
-                  <h4 className="font-semibold mb-2">
-                    Catatan Jurnal (Psikologi)
-                  </h4>
-                  <p className="text-muted-foreground bg-secondary/50 p-3 rounded-md whitespace-pre-wrap">
-                    {selectedTrade.journalNotes || 'Tidak ada catatan.'}
-                  </p>
-                </div>
+                {selectedTrade.journalNotes && (
+                  <div className="border-t pt-4 mt-2">
+                    <h4 className="font-semibold mb-2">
+                      Catatan Jurnal (Psikologi)
+                    </h4>
+                    <p className="text-muted-foreground bg-secondary/50 p-3 rounded-md whitespace-pre-wrap">
+                      {selectedTrade.journalNotes}
+                    </p>
+                  </div>
+                )}
               </div>
               <DialogFooter>
-                <Button variant="outline">
+                <Button variant="outline" onClick={handleEdit}>
                   <Pencil className="mr-2 h-4 w-4" />
                   Edit
                 </Button>
                 <Button
                   variant="destructive"
-                  onClick={handleDelete}
+                  onClick={() => setIsDeleteDialogOpen(true)}
                   disabled={isDeleting}
                 >
-                  {isDeleting ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash className="mr-2 h-4 w-4" />
-                  )}
+                  <Trash className="mr-2 h-4 w-4" />
                   Hapus
                 </Button>
               </DialogFooter>
@@ -356,6 +375,35 @@ export default function TradeHistoryPage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tindakan ini tidak dapat dibatalkan. Ini akan menghapus data trade
+              secara permanen dari server.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              Ya, Hapus
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
