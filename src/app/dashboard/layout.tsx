@@ -15,6 +15,13 @@ import {
   LogOut,
   Loader2,
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 import {
   SidebarProvider,
@@ -39,11 +46,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import FloatingAddButton from '@/components/FloatingAddButton';
+import NewTradeForm from '@/components/NewTradeForm';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutGrid, label: 'Dashboard' },
   { href: '/dashboard/trade-history', icon: Activity, label: 'Riwayat Trade' },
-  { href: '/dashboard/new-trade', icon: PlusCircle, label: 'Tambah Trade Baru' },
 ];
 
 function MainSidebar() {
@@ -71,6 +78,19 @@ function MainSidebar() {
               </Button>
             </SidebarMenuItem>
           ))}
+          {/* We keep this item visible but separate */}
+          <SidebarMenuItem className="md:hidden">
+             <Button
+                asChild
+                variant={pathname === '/dashboard/new-trade' ? 'secondary' : 'ghost'}
+                className="w-full justify-start"
+              >
+                <Link href={'/dashboard/new-trade'}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Tambah Trade Baru
+                </Link>
+              </Button>
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
@@ -97,11 +117,11 @@ function MainSidebar() {
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const pathname = usePathname();
   const { toast } = useToast();
   const auth = getAuth();
   const { user } = useUser();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
@@ -187,7 +207,17 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 md:ml-[16rem] group-data-[state=collapsed]/sidebar-wrapper:md:ml-[3rem] transition-[margin-left] duration-200 ease-linear">
             {children}
           </main>
-          {pathname !== '/dashboard/new-trade' && <FloatingAddButton />}
+           <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+            <DialogTrigger asChild>
+              <FloatingAddButton />
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Tambah Trade Baru</DialogTitle>
+              </DialogHeader>
+              <NewTradeForm onSuccess={() => setIsFormOpen(false)} />
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </SidebarProvider>

@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import {
@@ -9,21 +8,21 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import React from 'react';
 
-export default function FloatingAddButton() {
+const FloatingAddButton = React.forwardRef<HTMLButtonElement>((props, ref) => {
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            asChild
+            ref={ref}
             className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-40"
             size="icon"
+            {...props}
           >
-            <Link href="/dashboard/new-trade">
-              <Plus className="h-6 w-6" />
-              <span className="sr-only">Tambah Trade Baru</span>
-            </Link>
+            <Plus className="h-6 w-6" />
+            <span className="sr-only">Tambah Trade Baru</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent side="left">
@@ -32,4 +31,8 @@ export default function FloatingAddButton() {
       </Tooltip>
     </TooltipProvider>
   );
-}
+});
+
+FloatingAddButton.displayName = 'FloatingAddButton';
+
+export default FloatingAddButton;
