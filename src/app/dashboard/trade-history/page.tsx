@@ -6,7 +6,6 @@ import { firestore } from '@/firebase/config';
 import {
   collection,
   query,
-  onSnapshot,
   orderBy,
   Timestamp,
 } from 'firebase/firestore';
@@ -118,20 +117,8 @@ export default function TradeHistoryPage() {
     [user]
   );
   const { data: trades, loading } = useCollection<Trade>(tradesQuery);
-  const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
-
-  const handleRowClick = (trade: Trade) => {
-    setSelectedTrade(trade);
-  };
-  
-  const handleOpenChange = (isOpen: boolean) => {
-    if (!isOpen) {
-      setSelectedTrade(null);
-    }
-  }
 
   return (
-    <Dialog onOpenChange={handleOpenChange}>
       <div className="flex flex-col gap-4">
         <div className="flex items-center">
           <h1 className="text-lg font-semibold md:text-2xl font-headline">
@@ -175,45 +162,72 @@ export default function TradeHistoryPage() {
                     const pnl = calculatePnL(trade);
                     const isProfit = pnl >= 0;
                     return (
-                      <DialogTrigger asChild key={trade.id}>
-                        <TableRow
-                          onClick={()={() => handleRowClick(trade)}
-                          className={cn(
-                            'cursor-pointer',
-                            isProfit ? 'bg-green-500/10' : 'bg-red-500/10'
-                          )}
-                        >
-                          <TableCell>{formatDate(trade.closeDate)}</TableCell>
-                          <TableCell className="font-medium">
-                            {trade.ticker}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                trade.position === 'Long'
-                                  ? 'default'
-                                  : 'destructive'
-                              }
-                              className={cn(
-                                trade.position === 'Long'
-                                  ? 'bg-green-600'
-                                  : 'bg-red-600',
-                                'text-white'
-                              )}
-                            >
-                              {trade.position}
-                            </Badge>
-                          </TableCell>
-                          <TableCell
+                      <Dialog key={trade.id}>
+                        <DialogTrigger asChild>
+                          <TableRow
                             className={cn(
-                              'text-right font-mono',
-                              isProfit ? 'text-green-400' : 'text-red-400'
+                              'cursor-pointer',
+                              isProfit ? 'bg-green-500/10' : 'bg-red-500/10'
                             )}
                           >
-                            {formatCurrency(pnl)}
-                          </TableCell>
-                        </TableRow>
-                      </DialogTrigger>
+                            <TableCell>{formatDate(trade.closeDate)}</TableCell>
+                            <TableCell className="font-medium">
+                              {trade.ticker}
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={
+                                  trade.position === 'Long'
+                                    ? 'default'
+                                    : 'destructive'
+                                }
+                                className={cn(
+                                  trade.position === 'Long'
+                                    ? 'bg-green-600'
+                                    : 'bg-red-600',
+                                  'text-white'
+                                )}
+                              >
+                                {trade.position}
+                              </Badge>
+                            </TableCell>
+                            <TableCell
+                              className={cn(
+                                'text-right font-mono',
+                                isProfit ? 'text-green-400' : 'text-red-400'
+                              )}
+                            >
+                              {formatCurrency(pnl)}
+                            </TableCell>
+                          </TableRow>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-lg">
+                          <DialogHeader>
+                            <DialogTitle>Detail Trade: {trade.ticker}</DialogTitle>
+                            <DialogDescription>
+                              {formatDate(trade.openDate)} - {formatDate(trade.closeDate)}
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="grid gap-4 py-4 text-sm">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div><span className="text-muted-foreground">P&L Bersih:</span> <span className={cn(calculatePnL(trade) >= 0 ? 'text-green-400' : 'text-red-400', 'font-semibold')}>{formatCurrency(calculatePnL(trade))}</span></div>
+                              <div><span className="text-muted-foreground">Tipe Aset:</span> {trade.assetType}</div>
+                              <div><span className="text-muted-foreground">Arah:</span> {trade.position}</div>
+                              <div><span className="text-muted-foreground">Strategi:</span> <Badge variant="secondary">{trade.strategy || 'N/A'}</Badge></div>
+                              <div><span className="text-muted-foreground">Rating:</span> <RenderRating rating={trade.executionRating || 0} /></div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-4 border-t pt-4 mt-2">
+                              <div><span className="text-muted-foreground block">Harga Masuk</span> {formatCurrency(trade.entryPrice)}</div>
+                              <div><span className="text-muted-foreground block">Harga Keluar</span> {formatCurrency(trade.exitPrice)}</div>
+                              <div><span className="text-muted-foreground block">Ukuran Posisi</span> {trade.positionSize}</div>
+                            </div>
+                            <div className="border-t pt-4 mt-2">
+                              <h4 className="font-semibold mb-2">Catatan Jurnal (Psikologi)</h4>
+                              <p className="text-muted-foreground bg-secondary/50 p-3 rounded-md whitespace-pre-wrap">{trade.journalNotes || 'Tidak ada catatan.'}</p>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     );
                   })
                 ) : (
@@ -228,35 +242,5 @@ export default function TradeHistoryPage() {
           </CardContent>
         </Card>
       </div>
-
-       {selectedTrade && (
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Detail Trade: {selectedTrade.ticker}</DialogTitle>
-              <DialogDescription>
-                 {formatDate(selectedTrade.openDate)} - {formatDate(selectedTrade.closeDate)}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4 text-sm">
-                <div className="grid grid-cols-2 gap-4">
-                    <div><span className="text-muted-foreground">P&L Bersih:</span> <span className={cn(calculatePnL(selectedTrade) >= 0 ? 'text-green-400' : 'text-red-400', 'font-semibold')}>{formatCurrency(calculatePnL(selectedTrade))}</span></div>
-                    <div><span className="text-muted-foreground">Tipe Aset:</span> {selectedTrade.assetType}</div>
-                    <div><span className="text-muted-foreground">Arah:</span> {selectedTrade.position}</div>
-                    <div><span className="text-muted-foreground">Strategi:</span> <Badge variant="secondary">{selectedTrade.strategy || 'N/A'}</Badge></div>
-                    <div><span className="text-muted-foreground">Rating:</span> <RenderRating rating={selectedTrade.executionRating || 0} /></div>
-                </div>
-                 <div className="grid grid-cols-3 gap-4 border-t pt-4 mt-2">
-                    <div><span className="text-muted-foreground block">Harga Masuk</span> {formatCurrency(selectedTrade.entryPrice)}</div>
-                    <div><span className="text-muted-foreground block">Harga Keluar</span> {formatCurrency(selectedTrade.exitPrice)}</div>
-                    <div><span className="text-muted-foreground block">Ukuran Posisi</span> {selectedTrade.positionSize}</div>
-                 </div>
-                 <div className="border-t pt-4 mt-2">
-                    <h4 className="font-semibold mb-2">Catatan Jurnal (Psikologi)</h4>
-                    <p className="text-muted-foreground bg-secondary/50 p-3 rounded-md whitespace-pre-wrap">{selectedTrade.journalNotes || 'Tidak ada catatan.'}</p>
-                 </div>
-            </div>
-          </DialogContent>
-        )}
-    </Dialog>
   );
 }
