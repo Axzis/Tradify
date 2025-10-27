@@ -14,7 +14,6 @@ import {
   Settings,
   LogOut,
   Loader2,
-  PanelLeft,
 } from 'lucide-react';
 
 import {
