@@ -11,6 +11,7 @@ import {
   Timestamp,
   doc,
   deleteDoc,
+  limit,
 } from 'firebase/firestore';
 import useCollection from '@/hooks/use-collection';
 import {
@@ -180,7 +181,8 @@ export default function TradeHistoryPage() {
       user
         ? query(
             collection(firestore, 'users', user.uid, 'trades'),
-            orderBy('createdAt', 'desc')
+            orderBy('createdAt', 'desc'),
+            limit(50)
           )
         : null,
     [user]
