@@ -41,7 +41,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import FloatingAddButton from '@/components/FloatingAddButton';
 
-
 const navItems = [
   { href: '/dashboard', icon: LayoutGrid, label: 'Dashboard' },
   { href: '/dashboard/trade-history', icon: Activity, label: 'Riwayat Trade' },
@@ -133,11 +132,12 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex group/sidebar-wrapper">
+      <div className="min-h-screen w-full flex">
         <MainSidebar />
-        <div className="flex flex-col flex-1 min-w-0">
+        <div className="flex flex-col flex-1 min-w-0 transition-[margin-left] duration-200 ease-linear md:ml-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:ml-[var(--sidebar-width-icon)]">
           <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
             <SidebarTrigger className="md:flex hidden" />
+            <SidebarTrigger className="md:hidden" />
             <div className="w-full flex-1">
               <span className="font-semibold text-sm sm:text-base">
                 Selamat Datang, {user?.displayName || 'Pengguna'}!
@@ -185,7 +185,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               </DropdownMenuContent>
             </DropdownMenu>
           </header>
-          <main className="flex-1 overflow-auto p-4 lg:p-6 md:ml-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-200 ease-linear">
+          <main className="flex-1 overflow-auto p-4 lg:p-6">
             {children}
           </main>
           {pathname !== '/dashboard/new-trade' && <FloatingAddButton />}
