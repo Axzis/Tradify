@@ -148,7 +148,7 @@ export default function NewTradePage() {
           Tambah Trade Baru
         </h1>
       </div>
-      <Card>
+      <Card className="max-w-6xl w-full mx-auto">
         <CardHeader>
           <CardTitle>Detail Transaksi</CardTitle>
         </CardHeader>
