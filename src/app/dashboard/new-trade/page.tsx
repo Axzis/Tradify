@@ -38,8 +38,9 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
+import { format, setHours, setMinutes } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { ChangeEvent } from 'react';
 
 const tradeSchema = z
   .object({
@@ -225,7 +226,7 @@ export default function NewTradePage() {
                   name="openDate"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Tanggal Buka</FormLabel>
+                      <FormLabel>Tanggal & Waktu Buka</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -237,9 +238,9 @@ export default function NewTradePage() {
                               )}
                             >
                               {field.value ? (
-                                format(field.value, 'PPP')
+                                format(field.value, 'PPP HH:mm')
                               ) : (
-                                <span>Pilih tanggal</span>
+                                <span>Pilih tanggal & waktu</span>
                               )}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
@@ -255,6 +256,29 @@ export default function NewTradePage() {
                             }
                             initialFocus
                           />
+                          <div className="p-2 border-t border-border">
+                            <Input
+                              type="time"
+                              step="60"
+                              onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                const time = e.target.value;
+                                const [hours, minutes] = time.split(':');
+                                const newDate = setMinutes(
+                                  setHours(
+                                    field.value || new Date(),
+                                    parseInt(hours)
+                                  ),
+                                  parseInt(minutes)
+                                );
+                                field.onChange(newDate);
+                              }}
+                              value={
+                                field.value
+                                  ? format(field.value, 'HH:mm')
+                                  : ''
+                              }
+                            />
+                          </div>
                         </PopoverContent>
                       </Popover>
                       <FormMessage />
@@ -267,7 +291,7 @@ export default function NewTradePage() {
                   name="closeDate"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Tanggal Tutup</FormLabel>
+                      <FormLabel>Tanggal & Waktu Tutup</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -279,9 +303,9 @@ export default function NewTradePage() {
                               )}
                             >
                               {field.value ? (
-                                format(field.value, 'PPP')
+                                format(field.value, 'PPP HH:mm')
                               ) : (
-                                <span>Pilih tanggal</span>
+                                <span>Pilih tanggal & waktu</span>
                               )}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
@@ -293,10 +317,34 @@ export default function NewTradePage() {
                             selected={field.value}
                             onSelect={field.onChange}
                             disabled={(date) =>
-                              date > new Date() || date < new Date('1900-01-01')
+                              date > new Date() ||
+                              date < (form.getValues('openDate') || new Date('1900-01-01'))
                             }
                             initialFocus
                           />
+                          <div className="p-2 border-t border-border">
+                            <Input
+                              type="time"
+                              step="60"
+                              onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                const time = e.target.value;
+                                const [hours, minutes] = time.split(':');
+                                const newDate = setMinutes(
+                                  setHours(
+                                    field.value || new Date(),
+                                    parseInt(hours)
+                                  ),
+                                  parseInt(minutes)
+                                );
+                                field.onChange(newDate);
+                              }}
+                              value={
+                                field.value
+                                  ? format(field.value, 'HH:mm')
+                                  : ''
+                              }
+                            />
+                          </div>
                         </PopoverContent>
                       </Popover>
                       <FormMessage />
