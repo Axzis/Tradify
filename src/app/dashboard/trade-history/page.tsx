@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useUser } from '@/firebase/provider';
 import { firestore } from '@/firebase/config';
 import { collection, query, onSnapshot, orderBy, Timestamp } from 'firebase/firestore';
+import useCollection from '@/hooks/use-collection';
 import {
   Table,
   TableBody,
@@ -26,6 +27,7 @@ interface Trade {
   positionSize: number;
   commission: number;
   closeDate: string | Timestamp;
+  createdAt: Timestamp;
 }
 
 const calculatePnL = (trade: Trade) => {
@@ -59,36 +61,18 @@ const formatDate = (date: string | Timestamp) => {
 
 export default function TradeHistoryPage() {
   const { user } = useUser();
-  const [trades, setTrades] = useState<Trade[]>([]);
-  const [loading, setLoading] = useState(true);
+  const tradesQuery = useMemo(
+    () =>
+      user
+        ? query(
+            collection(firestore, 'users', user.uid, 'trades'),
+            orderBy('createdAt', 'desc')
+          )
+        : null,
+    [user]
+  );
+  const { data: trades, loading } = useCollection<Trade>(tradesQuery);
 
-  useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
-    const tradesCollectionRef = collection(firestore, 'users', user.uid, 'trades');
-    const q = query(tradesCollectionRef, orderBy('createdAt', 'desc'));
-
-    const unsubscribe = onSnapshot(
-      q,
-      (querySnapshot) => {
-        const tradesData: Trade[] = [];
-        querySnapshot.forEach((doc) => {
-          tradesData.push({ id: doc.id, ...doc.data() } as Trade);
-        });
-        setTrades(tradesData);
-        setLoading(false);
-      },
-      (error) => {
-        console.error('Error fetching trades: ', error);
-        setLoading(false);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [user]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -119,7 +103,7 @@ export default function TradeHistoryPage() {
                     <TableCell className="text-right"><Skeleton className="h-4 w-[100px] ml-auto" /></TableCell>
                   </TableRow>
                 ))
-              ) : trades.length > 0 ? (
+              ) : trades && trades.length > 0 ? (
                 trades.map((trade) => {
                   const pnl = calculatePnL(trade);
                   const isProfit = pnl >= 0;
