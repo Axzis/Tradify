@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getAuth, signOut } from 'firebase/auth';
@@ -12,6 +13,7 @@ import {
   PlusCircle,
   Settings,
   LogOut,
+  Loader2,
 } from 'lucide-react';
 
 import {
@@ -65,8 +67,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const auth = getAuth();
   const { user } = useUser();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     try {
       await signOut(auth);
       router.push('/');
@@ -76,6 +80,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         title: 'Logout Gagal',
         description: error.message,
       });
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
@@ -94,8 +100,12 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 </p>
               )}
             </div>
-            <Button variant="ghost" onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
+            <Button variant="ghost" onClick={handleLogout} disabled={isLoggingOut}>
+              {isLoggingOut ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <LogOut className="mr-2 h-4 w-4" />
+              )}
               Logout
             </Button>
           </header>

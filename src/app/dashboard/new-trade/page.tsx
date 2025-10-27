@@ -24,6 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase/provider';
 import { firestore } from '@/firebase/config';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { Loader2 } from 'lucide-react';
 
 const tradeSchema = z.object({
   ticker: z.string().min(1, 'Simbol/Ticker tidak boleh kosong'),
@@ -52,7 +53,7 @@ export default function NewTradePage() {
     handleSubmit,
     control,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<TradeFormData>({
     resolver: zodResolver(tradeSchema),
     defaultValues: {
@@ -343,7 +344,12 @@ export default function NewTradePage() {
             </div>
 
             <div className="flex justify-end">
-              <Button type="submit">Simpan Trade</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Simpan Trade
+              </Button>
             </div>
           </form>
         </CardContent>
