@@ -142,357 +142,359 @@ export default function NewTradePage() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center">
-        <h1 className="text-lg font-semibold md:text-2xl">
-          Tambah Trade Baru
-        </h1>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Detail Transaksi</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <FormField
-                  control={form.control}
-                  name="ticker"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Simbol/Ticker</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="assetType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tipe Aset</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
+    <div className="w-full max-w-6xl mx-auto">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center">
+          <h1 className="text-lg font-semibold md:text-2xl">
+            Tambah Trade Baru
+          </h1>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Detail Transaksi</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="ticker"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Simbol/Ticker</FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Pilih tipe aset" />
-                          </SelectTrigger>
+                          <Input {...field} />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Saham">Saham</SelectItem>
-                          <SelectItem value="Kripto">Kripto</SelectItem>
-                          <SelectItem value="Forex">Forex</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="position"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Arah Posisi</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Pilih arah posisi" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Long">Long</SelectItem>
-                          <SelectItem value="Short">Short</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="openDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Tanggal & Waktu Buka</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
+                  <FormField
+                    control={form.control}
+                    name="assetType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tipe Aset</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
-                            <Button
-                              variant={'outline'}
-                              className={cn(
-                                'w-full pl-3 text-left font-normal',
-                                !field.value && 'text-muted-foreground'
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, 'PPP HH:mm')
-                              ) : (
-                                <span>Pilih tanggal & waktu</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Pilih tipe aset" />
+                            </SelectTrigger>
                           </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) =>
-                              date > new Date() || date < new Date('1900-01-01')
-                            }
-                            initialFocus
-                          />
-                          <div className="p-2 border-t border-border">
-                            <Input
-                              type="time"
-                              step="60"
-                              onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                const time = e.target.value;
-                                const [hours, minutes] = time.split(':');
-                                const newDate = setMinutes(
-                                  setHours(
-                                    field.value || new Date(),
-                                    parseInt(hours)
-                                  ),
-                                  parseInt(minutes)
-                                );
-                                field.onChange(newDate);
-                              }}
-                              value={
-                                field.value
-                                  ? format(field.value, 'HH:mm')
-                                  : ''
-                              }
-                            />
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                          <SelectContent>
+                            <SelectItem value="Saham">Saham</SelectItem>
+                            <SelectItem value="Kripto">Kripto</SelectItem>
+                            <SelectItem value="Forex">Forex</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="closeDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Tanggal & Waktu Tutup</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
+                  <FormField
+                    control={form.control}
+                    name="position"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Arah Posisi</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
-                            <Button
-                              variant={'outline'}
-                              className={cn(
-                                'w-full pl-3 text-left font-normal',
-                                !field.value && 'text-muted-foreground'
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, 'PPP HH:mm')
-                              ) : (
-                                <span>Pilih tanggal & waktu</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Pilih arah posisi" />
+                            </SelectTrigger>
                           </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) =>
-                              date > new Date() ||
-                              date < (form.getValues('openDate') || new Date('1900-01-01'))
-                            }
-                            initialFocus
-                          />
-                          <div className="p-2 border-t border-border">
-                            <Input
-                              type="time"
-                              step="60"
-                              onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                const time = e.target.value;
-                                const [hours, minutes] = time.split(':');
-                                const newDate = setMinutes(
-                                  setHours(
-                                    field.value || new Date(),
-                                    parseInt(hours)
-                                  ),
-                                  parseInt(minutes)
-                                );
-                                field.onChange(newDate);
-                              }}
-                              value={
-                                field.value
-                                  ? format(field.value, 'HH:mm')
-                                  : ''
+                          <SelectContent>
+                            <SelectItem value="Long">Long</SelectItem>
+                            <SelectItem value="Short">Short</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="openDate"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Tanggal & Waktu Buka</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={'outline'}
+                                className={cn(
+                                  'w-full pl-3 text-left font-normal',
+                                  !field.value && 'text-muted-foreground'
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, 'PPP HH:mm')
+                                ) : (
+                                  <span>Pilih tanggal & waktu</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              disabled={(date) =>
+                                date > new Date() || date < new Date('1900-01-01')
                               }
+                              initialFocus
                             />
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                            <div className="p-2 border-t border-border">
+                              <Input
+                                type="time"
+                                step="60"
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                  const time = e.target.value;
+                                  const [hours, minutes] = time.split(':');
+                                  const newDate = setMinutes(
+                                    setHours(
+                                      field.value || new Date(),
+                                      parseInt(hours)
+                                    ),
+                                    parseInt(minutes)
+                                  );
+                                  field.onChange(newDate);
+                                }}
+                                value={
+                                  field.value
+                                    ? format(field.value, 'HH:mm')
+                                    : ''
+                                }
+                              />
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="entryPrice"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Harga Masuk</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="any" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="closeDate"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Tanggal & Waktu Tutup</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={'outline'}
+                                className={cn(
+                                  'w-full pl-3 text-left font-normal',
+                                  !field.value && 'text-muted-foreground'
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, 'PPP HH:mm')
+                                ) : (
+                                  <span>Pilih tanggal & waktu</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              disabled={(date) =>
+                                date > new Date() ||
+                                date < (form.getValues('openDate') || new Date('1900-01-01'))
+                              }
+                              initialFocus
+                            />
+                            <div className="p-2 border-t border-border">
+                              <Input
+                                type="time"
+                                step="60"
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                  const time = e.target.value;
+                                  const [hours, minutes] = time.split(':');
+                                  const newDate = setMinutes(
+                                    setHours(
+                                      field.value || new Date(),
+                                      parseInt(hours)
+                                    ),
+                                    parseInt(minutes)
+                                  );
+                                  field.onChange(newDate);
+                                }}
+                                value={
+                                  field.value
+                                    ? format(field.value, 'HH:mm')
+                                    : ''
+                                }
+                              />
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="exitPrice"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Harga Keluar</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="any" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="positionSize"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Ukuran Posisi</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="any" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="commission"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Komisi & Biaya</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="any" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="strategy"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Strategi/Setup</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
+                  <FormField
+                    control={form.control}
+                    name="entryPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Harga Masuk</FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Pilih strategi" />
-                          </SelectTrigger>
+                          <Input type="number" step="any" {...field} />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Breakout">Breakout</SelectItem>
-                          <SelectItem value="Support/Resistance">
-                            Support/Resistance
-                          </SelectItem>
-                          <SelectItem value="Trend Following">
-                            Trend Following
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="executionRating"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Rating Eksekusi</FormLabel>
-                      <Select
-                        onValueChange={(v) => field.onChange(Number(v))}
-                        defaultValue={String(field.value)}
-                      >
+                  <FormField
+                    control={form.control}
+                    name="exitPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Harga Keluar</FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Beri rating 1-5" />
-                          </SelectTrigger>
+                          <Input type="number" step="any" {...field} />
                         </FormControl>
-                        <SelectContent>
-                          {[1, 2, 3, 4, 5].map((v) => (
-                            <SelectItem key={v} value={String(v)}>
-                              {v} Bintang
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="positionSize"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ukuran Posisi</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="any" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="commission"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Komisi & Biaya</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="any" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="strategy"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Strategi/Setup</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Pilih strategi" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Breakout">Breakout</SelectItem>
+                            <SelectItem value="Support/Resistance">
+                              Support/Resistance
                             </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                            <SelectItem value="Trend Following">
+                              Trend Following
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="executionRating"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Rating Eksekusi</FormLabel>
+                        <Select
+                          onValueChange={(v) => field.onChange(Number(v))}
+                          defaultValue={String(field.value)}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Beri rating 1-5" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {[1, 2, 3, 4, 5].map((v) => (
+                              <SelectItem key={v} value={String(v)}>
+                                {v} Bintang
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="journalNotes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Catatan Jurnal (Psikologi)</FormLabel>
+                      <FormControl>
+                        <Textarea rows={4} {...field} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
 
-              <FormField
-                control={form.control}
-                name="journalNotes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Catatan Jurnal (Psikologi)</FormLabel>
-                    <FormControl>
-                      <Textarea rows={4} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex justify-end">
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  Simpan Trade
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+                <div className="flex justify-end">
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Simpan Trade
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
