@@ -23,7 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase/provider';
 import { firestore } from '@/firebase/config';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2 } from 'lucide-react';
 import {
   Form,
   FormControl,
@@ -32,12 +32,24 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 const tradeSchema = z.object({
   ticker: z.string().min(1, 'Simbol/Ticker tidak boleh kosong'),
   assetType: z.enum(['Saham', 'Kripto', 'Forex']),
-  openDate: z.string().min(1, 'Tanggal buka tidak boleh kosong'),
-  closeDate: z.string().min(1, 'Tanggal tutup tidak boleh kosong'),
+  openDate: z.date({
+    required_error: 'Tanggal buka tidak boleh kosong.',
+  }),
+  closeDate: z.date({
+    required_error: 'Tanggal tutup tidak boleh kosong.',
+  }),
   position: z.enum(['Long', 'Short']),
   entryPrice: z.coerce.number().positive('Harga masuk harus positif'),
   exitPrice: z.coerce.number().positive('Harga keluar harus positif'),
@@ -195,11 +207,39 @@ export default function NewTradePage() {
                   control={form.control}
                   name="openDate"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tanggal & Waktu Buka</FormLabel>
-                      <FormControl>
-                        <Input type="datetime-local" {...field} />
-                      </FormControl>
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Tanggal Buka</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={'outline'}
+                              className={cn(
+                                'w-full pl-3 text-left font-normal',
+                                !field.value && 'text-muted-foreground'
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, 'PPP')
+                              ) : (
+                                <span>Pilih tanggal</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) =>
+                              date > new Date() || date < new Date('1900-01-01')
+                            }
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -209,11 +249,39 @@ export default function NewTradePage() {
                   control={form.control}
                   name="closeDate"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tanggal & Waktu Tutup</FormLabel>
-                      <FormControl>
-                        <Input type="datetime-local" {...field} />
-                      </FormControl>
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Tanggal Tutup</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={'outline'}
+                              className={cn(
+                                'w-full pl-3 text-left font-normal',
+                                !field.value && 'text-muted-foreground'
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, 'PPP')
+                              ) : (
+                                <span>Pilih tanggal</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) =>
+                              date > new Date() || date < new Date('1900-01-01')
+                            }
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
                       <FormMessage />
                     </FormItem>
                   )}

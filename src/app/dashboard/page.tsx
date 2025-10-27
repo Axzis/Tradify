@@ -44,7 +44,7 @@ interface Trade {
   entryPrice: number;
   positionSize: number;
   commission: number;
-  closeDate: string | Timestamp;
+  closeDate: Timestamp;
   createdAt: Timestamp;
 }
 
@@ -139,10 +139,7 @@ export default function DashboardPage() {
     let cumulativePnl = 0;
     const equityCurve = tradesWithPnl.map((trade) => {
       cumulativePnl += trade.pnl;
-      const closeDate =
-        trade.closeDate instanceof Timestamp
-          ? trade.closeDate.toDate()
-          : new Date(trade.closeDate);
+      const closeDate = trade.closeDate.toDate();
       return {
         date: closeDate.toLocaleDateString('id-ID'),
         equity: cumulativePnl,
@@ -226,12 +223,12 @@ export default function DashboardPage() {
         </h1>
       </div>
       {loading ? (
-        <>
+        <div className="flex flex-1 flex-col gap-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             {renderKpiCards()}
           </div>
-          <div className="grid gap-4 mt-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-1 md:col-span-2 lg:col-span-4">
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
+            <Card className="lg:col-span-4">
               <CardHeader>
                 <CardTitle>Kurva Ekuitas</CardTitle>
               </CardHeader>
@@ -239,7 +236,7 @@ export default function DashboardPage() {
                 <Skeleton className="h-[350px] w-full" />
               </CardContent>
             </Card>
-            <Card className="col-span-1 md:col-span-2 lg:col-span-3">
+            <Card className="lg:col-span-3">
               <CardHeader>
                 <CardTitle>P&L per Aset</CardTitle>
               </CardHeader>
@@ -248,7 +245,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </div>
-        </>
+        </div>
       ) : !trades || trades.length === 0 ? (
         <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm h-64 mt-4">
           <div className="flex flex-col items-center gap-1 text-center">
@@ -261,12 +258,12 @@ export default function DashboardPage() {
           </div>
         </div>
       ) : (
-        <>
+        <div className="flex flex-1 flex-col gap-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             {renderKpiCards()}
           </div>
-          <div className="grid gap-4 mt-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-1 md:col-span-2 lg:col-span-4">
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
+            <Card className="lg:col-span-4">
               <CardHeader>
                 <CardTitle>Kurva Ekuitas</CardTitle>
               </CardHeader>
@@ -303,7 +300,7 @@ export default function DashboardPage() {
                 </ChartContainer>
               </CardContent>
             </Card>
-            <Card className="col-span-1 md:col-span-2 lg:col-span-3">
+            <Card className="lg:col-span-3">
               <CardHeader>
                 <CardTitle>P&L per Aset</CardTitle>
               </CardHeader>
@@ -345,7 +342,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </div>
-        </>
+        </div>
       )}
     </>
   );
