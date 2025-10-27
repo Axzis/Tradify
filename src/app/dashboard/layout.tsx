@@ -132,9 +132,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen w-full flex">
+      <div className="min-h-screen w-full flex group/sidebar-wrapper">
         <MainSidebar />
-        <div className="flex flex-col flex-1 min-w-0 transition-[margin-left] duration-200 ease-linear md:ml-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:ml-[var(--sidebar-width-icon)]">
+        <div className="flex flex-col flex-1 min-w-0">
           <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
             <SidebarTrigger className="md:flex hidden" />
             <SidebarTrigger className="md:hidden" />
@@ -185,7 +185,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               </DropdownMenuContent>
             </DropdownMenu>
           </header>
-          <main className="flex-1 overflow-auto p-4 lg:p-6">
+          <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 md:ml-[16rem] group-data-[state=collapsed]/sidebar-wrapper:md:ml-[3rem] transition-[margin-left] duration-200 ease-linear">
             {children}
           </main>
           {pathname !== '/dashboard/new-trade' && <FloatingAddButton />}
