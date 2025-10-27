@@ -134,7 +134,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     <SidebarProvider>
       <div className="min-h-screen">
         <MainSidebar />
-        <SidebarInset>
+        <SidebarInset className="md:ml-[var(--sidebar-width)] peer-data-[state=collapsed]:md:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-300 ease-in-out">
           <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
             <SidebarTrigger className="md:hidden" />
             <div className="w-full flex-1">
@@ -184,7 +184,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               </DropdownMenuContent>
             </DropdownMenu>
           </header>
-          <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 md:ml-[var(--sidebar-width)] peer-data-[state=collapsed]:md:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-300 ease-in-out">
+          <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
             {children}
           </main>
         </SidebarInset>
