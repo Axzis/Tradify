@@ -1,11 +1,9 @@
-import type {Metadata} from 'next';
-import './globals.css';
-import { Toaster } from "@/components/ui/toaster"
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Tradify',
-  description: 'A modern trading platform.',
-};
+import './globals.css';
+import { Toaster } from '@/components/ui/toaster';
+import { FirebaseProvider } from '@/firebase/provider';
+import AuthStateGate from '@/components/auth-state-gate';
 
 export default function RootLayout({
   children,
@@ -16,12 +14,17 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter&display=swap"
+          rel="stylesheet"
+        />
       </head>
       <body className="font-body antialiased">
-        {children}
-        <Toaster />
+        <FirebaseProvider>
+          <AuthStateGate>{children}</AuthStateGate>
+          <Toaster />
+        </FirebaseProvider>
       </body>
     </html>
   );
