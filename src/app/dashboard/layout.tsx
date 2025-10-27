@@ -135,7 +135,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <MainSidebar />
       <SidebarInset className="md:ml-[var(--sidebar-width)] peer-data-[state=collapsed]:md:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-300 ease-in-out">
         <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
-          <SidebarTrigger className="md:hidden" />
+          <SidebarTrigger />
           <div className="w-full flex-1">
             <span className="font-semibold text-sm sm:text-base">
               Selamat Datang, {user?.displayName || 'Pengguna'}!

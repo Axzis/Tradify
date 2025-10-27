@@ -132,7 +132,7 @@ export default function DashboardPage() {
           Dashboard
         </h1>
       </div>
-      <div className="max-w-6xl w-full mx-auto">
+      <div>
         {loading ? (
           <div className="flex flex-1 flex-col gap-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">

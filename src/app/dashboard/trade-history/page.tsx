@@ -237,7 +237,7 @@ export default function TradeHistoryPage() {
           Riwayat Trade
         </h1>
       </div>
-      <Card className="max-w-6xl w-full mx-auto">
+      <Card>
         <CardHeader>
           <CardTitle>Transaksi Anda</CardTitle>
         </CardHeader>

@@ -104,7 +104,7 @@ export default function SettingsPage() {
         <h1 className="text-lg font-semibold md:text-2xl">Pengaturan</h1>
       </div>
 
-      <div className="grid gap-6 max-w-6xl w-full mx-auto">
+      <div className="grid gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Profil</CardTitle>
