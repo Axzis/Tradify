@@ -133,7 +133,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <SidebarProvider>
       <MainSidebar />
-      <SidebarInset className="md:ml-[var(--sidebar-width)] peer-data-[state=collapsed]:md:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-300 ease-in-out">
+      <div className="flex flex-col flex-1 min-w-0">
         <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
           <SidebarTrigger />
           <div className="w-full flex-1">
@@ -183,10 +183,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+        <main className="flex-1 overflow-auto p-4 lg:p-6">
           {children}
         </main>
-      </SidebarInset>
+      </div>
     </SidebarProvider>
   );
 }
