@@ -41,26 +41,35 @@ import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
-const tradeSchema = z.object({
-  ticker: z.string().min(1, 'Simbol/Ticker tidak boleh kosong'),
-  assetType: z.enum(['Saham', 'Kripto', 'Forex']),
-  openDate: z.date({
-    required_error: 'Tanggal buka tidak boleh kosong.',
-  }),
-  closeDate: z.date({
-    required_error: 'Tanggal tutup tidak boleh kosong.',
-  }),
-  position: z.enum(['Long', 'Short']),
-  entryPrice: z.coerce.number().positive('Harga masuk harus positif'),
-  exitPrice: z.coerce.number().positive('Harga keluar harus positif'),
-  positionSize: z.coerce.number().positive('Ukuran posisi harus positif'),
-  commission: z.coerce.number().min(0, 'Komisi tidak boleh negatif'),
-  strategy: z
-    .enum(['Breakout', 'Support/Resistance', 'Trend Following'])
-    .optional(),
-  journalNotes: z.string().optional(),
-  executionRating: z.coerce.number().min(1).max(5),
-});
+const tradeSchema = z
+  .object({
+    ticker: z.string().min(1, 'Simbol/Ticker tidak boleh kosong'),
+    assetType: z.enum(['Saham', 'Kripto', 'Forex']),
+    openDate: z.date({
+      required_error: 'Tanggal buka tidak boleh kosong.',
+    }),
+    closeDate: z.date({
+      required_error: 'Tanggal tutup tidak boleh kosong.',
+    }),
+    position: z.enum(['Long', 'Short']),
+    entryPrice: z.coerce.number().positive('Harga masuk harus positif'),
+    exitPrice: z.coerce.number().positive('Harga keluar harus positif'),
+    positionSize: z.coerce.number().positive('Ukuran posisi harus positif'),
+    commission: z.coerce.number().min(0, 'Komisi tidak boleh negatif'),
+    strategy: z
+      .enum(['Breakout', 'Support/Resistance', 'Trend Following'])
+      .optional(),
+    journalNotes: z.string().optional(),
+    executionRating: z.coerce.number().min(1).max(5),
+  })
+  .refine((data) => data.closeDate > data.openDate, {
+    message: 'Tanggal tutup harus setelah tanggal buka.',
+    path: ['closeDate'],
+  })
+  .refine((data) => data.exitPrice !== data.entryPrice, {
+    message: 'Harga keluar tidak boleh sama dengan harga masuk.',
+    path: ['exitPrice'],
+  });
 
 type TradeFormData = z.infer<typeof tradeSchema>;
 
@@ -134,7 +143,7 @@ export default function NewTradePage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center">
-        <h1 className="text-lg font-semibold md:text-2xl font-headline">
+        <h1 className="text-lg font-semibold md:text-2xl">
           Tambah Trade Baru
         </h1>
       </div>
