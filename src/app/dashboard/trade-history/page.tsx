@@ -92,16 +92,29 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
-const formatDate = (date: Timestamp | Date | { seconds: number, nanoseconds: number }) => {
+const formatDate = (date: any): string => {
   if (!date) return 'N/A';
+
   let d: Date;
+
+  // Handle Firestore Timestamp
   if (date instanceof Timestamp) {
     d = date.toDate();
-  } else if ('seconds' in date && 'nanoseconds' in date) {
+  } 
+  // Handle serialized Firestore Timestamp (plain object)
+  else if (typeof date === 'object' && date !== null && 'seconds' in date && 'nanoseconds' in date && !(date instanceof Date)) {
     d = new Timestamp(date.seconds, date.nanoseconds).toDate();
-  } else {
+  }
+  // Handle JavaScript Date object or a date string
+  else {
     d = new Date(date);
   }
+
+  // Check if the date is valid before formatting
+  if (isNaN(d.getTime())) {
+    return 'Invalid Date';
+  }
+
   return d.toLocaleString('id-ID', {
     year: 'numeric',
     month: 'short',
