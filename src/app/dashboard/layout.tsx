@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { getAuth, signOut } from 'firebase/auth';
 import { useUser } from '@/firebase/provider';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/sidebar';
 import Logo from '@/components/logo';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutGrid, label: 'Dashboard' },
@@ -39,6 +40,8 @@ const navItems = [
 
 function MainSidebar() {
   const { state } = useSidebar();
+  const pathname = usePathname();
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -48,7 +51,11 @@ function MainSidebar() {
         <SidebarMenu>
           {navItems.map((item) => (
             <SidebarMenuItem key={item.label}>
-              <Button asChild variant="ghost" className="w-full justify-start">
+              <Button
+                asChild
+                variant={pathname === item.href ? 'secondary' : 'ghost'}
+                className="w-full justify-start"
+              >
                 <Link href={item.href}>
                   <item.icon className="mr-2 h-4 w-4" />
                   {item.label}
@@ -100,7 +107,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 </p>
               )}
             </div>
-            <Button variant="ghost" onClick={handleLogout} disabled={isLoggingOut}>
+            <Button
+              variant="ghost"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+            >
               {isLoggingOut ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
