@@ -92,9 +92,16 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
-const formatDate = (date: Timestamp) => {
+const formatDate = (date: Timestamp | Date | { seconds: number, nanoseconds: number }) => {
   if (!date) return 'N/A';
-  const d = date.toDate();
+  let d: Date;
+  if (date instanceof Timestamp) {
+    d = date.toDate();
+  } else if ('seconds' in date && 'nanoseconds' in date) {
+    d = new Timestamp(date.seconds, date.nanoseconds).toDate();
+  } else {
+    d = new Date(date);
+  }
   return d.toLocaleString('id-ID', {
     year: 'numeric',
     month: 'short',
