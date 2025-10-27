@@ -27,13 +27,13 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
+  Cell
 } from 'recharts';
 import {
   ChartContainer,
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, Percent, Wallet, Goal } from 'lucide-react';
 
 interface Trade {
@@ -333,10 +333,9 @@ export default function DashboardPage() {
                     />
                     <Bar dataKey="pnl" radius={8}>
                         {analytics.pnlPerAsset.map((entry, index) => (
-                            <Bar
+                            <Cell
                                 key={`cell-${index}`}
                                 fill={entry.pnl >= 0 ? "hsl(var(--primary))" : "hsl(var(--destructive))"}
-                                dataKey="pnl"
                             />
                         ))}
                     </Bar>

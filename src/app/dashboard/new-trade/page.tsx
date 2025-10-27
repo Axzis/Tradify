@@ -60,6 +60,7 @@ export default function NewTradePage() {
       position: 'Long',
       commission: 0,
       executionRating: 5,
+      strategy: 'Breakout',
     },
   });
 
@@ -132,7 +133,10 @@ export default function NewTradePage() {
                   name="assetType"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Pilih tipe aset" />
                       </SelectTrigger>
@@ -153,7 +157,10 @@ export default function NewTradePage() {
                   name="position"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Pilih arah posisi" />
                       </SelectTrigger>
@@ -287,7 +294,7 @@ export default function NewTradePage() {
                   )}
                 />
               </div>
-              
+
               {/* Rating Eksekusi */}
               <div className="grid gap-2">
                 <Label htmlFor="executionRating">Rating Eksekusi</Label>
@@ -295,19 +302,24 @@ export default function NewTradePage() {
                   name="executionRating"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={(v) => field.onChange(Number(v))} value={String(field.value)}>
+                    <Select
+                      onValueChange={(v) => field.onChange(Number(v))}
+                      defaultValue={String(field.value)}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Beri rating 1-5" />
                       </SelectTrigger>
                       <SelectContent>
-                        {[1, 2, 3, 4, 5].map(v => (
-                           <SelectItem key={v} value={String(v)}>{v} Bintang</SelectItem>
+                        {[1, 2, 3, 4, 5].map((v) => (
+                          <SelectItem key={v} value={String(v)}>
+                            {v} Bintang
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   )}
                 />
-                 {errors.executionRating && (
+                {errors.executionRating && (
                   <p className="text-sm text-destructive">
                     {errors.executionRating.message}
                   </p>
@@ -317,13 +329,17 @@ export default function NewTradePage() {
 
             {/* Catatan Jurnal */}
             <div className="grid gap-2">
-                <Label htmlFor="journalNotes">Catatan Jurnal (Psikologi)</Label>
-                <Textarea id="journalNotes" {...register('journalNotes')} rows={4} />
-                 {errors.journalNotes && (
-                  <p className="text-sm text-destructive">
-                    {errors.journalNotes.message}
-                  </p>
-                )}
+              <Label htmlFor="journalNotes">Catatan Jurnal (Psikologi)</Label>
+              <Textarea
+                id="journalNotes"
+                {...register('journalNotes')}
+                rows={4}
+              />
+              {errors.journalNotes && (
+                <p className="text-sm text-destructive">
+                  {errors.journalNotes.message}
+                </p>
+              )}
             </div>
 
             <div className="flex justify-end">

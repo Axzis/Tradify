@@ -10,6 +10,7 @@ import {
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from './config';
 import { Skeleton } from '@/components/ui/skeleton';
+import Logo from '@/components/logo';
 
 type FirebaseContextType = {
   user: User | null;
@@ -36,11 +37,10 @@ export const FirebaseProvider = ({ children }: { children: ReactNode }) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen bg-background">
         <div className="flex flex-col items-center gap-4">
-          <Skeleton className="h-16 w-16 rounded-full" />
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-64" />
+          <Logo />
+          <p className="text-muted-foreground">Memuat sesi Anda...</p>
         </div>
       </div>
     );

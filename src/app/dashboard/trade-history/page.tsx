@@ -123,9 +123,15 @@ export default function TradeHistoryPage() {
   const handleRowClick = (trade: Trade) => {
     setSelectedTrade(trade);
   };
+  
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      setSelectedTrade(null);
+    }
+  }
 
   return (
-    <Dialog onOpenChange={(isOpen) => !isOpen && setSelectedTrade(null)}>
+    <Dialog onOpenChange={handleOpenChange}>
       <div className="flex flex-col gap-4">
         <div className="flex items-center">
           <h1 className="text-lg font-semibold md:text-2xl font-headline">
@@ -171,7 +177,7 @@ export default function TradeHistoryPage() {
                     return (
                       <DialogTrigger asChild key={trade.id}>
                         <TableRow
-                          onClick={() => handleRowClick(trade)}
+                          onClick={()={() => handleRowClick(trade)}
                           className={cn(
                             'cursor-pointer',
                             isProfit ? 'bg-green-500/10' : 'bg-red-500/10'
