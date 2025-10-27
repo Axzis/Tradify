@@ -2,7 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+} from 'firebase/auth';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,9 +33,23 @@ export default function RegisterPage() {
   const auth = getAuth();
 
   const handleSignUp = async () => {
+    if (!name) {
+      toast({
+        variant: 'destructive',
+        title: 'Registrasi Gagal',
+        description: 'Nama tidak boleh kosong.',
+      });
+      return;
+    }
     setIsLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      // Update the user's profile with the name
+      await updateProfile(userCredential.user, { displayName: name });
       // You might want to also save the user's name to Firestore here
       router.push('/dashboard');
     } catch (error: any) {
