@@ -126,8 +126,8 @@ export default function DashboardPage() {
   };
 
   return (
-    <>
-      <div className="flex items-center">
+    <div className="w-full max-w-6xl mx-auto">
+      <div className="flex items-center mb-4">
         <h1 className="text-lg font-semibold md:text-2xl">
           Dashboard
         </h1>
@@ -256,6 +256,6 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }

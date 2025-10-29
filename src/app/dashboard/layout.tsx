@@ -205,9 +205,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </DropdownMenu>
           </header>
           <main className="flex-1 p-4 lg:p-6 md:ml-[16rem] group-data-[state=collapsed]/sidebar-wrapper:md:ml-[3rem] transition-[margin-left] duration-300 ease-in-out">
-            <div className="w-full max-w-6xl mx-auto">
-              {children}
-            </div>
+            {children}
           </main>
            <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogTrigger asChild>
