@@ -3,8 +3,8 @@
 import { useMemo } from 'react';
 import { useUser } from '@/firebase';
 import { firestore } from '@/firebase/config';
-import { doc } from 'firebase/firestore';
-import { useDoc } from '@/firebase';
+import { collection, query, orderBy, Timestamp } from 'firebase/firestore';
+import useCollection from '@/hooks/use-collection';
 import {
   Card,
   CardContent,
@@ -30,7 +30,17 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, TrendingDown, Percent, Wallet, Goal } from 'lucide-react';
 
-// This interface now represents the pre-calculated summary document
+interface Trade {
+  id: string;
+  ticker: string;
+  position: 'Long' | 'Short';
+  exitPrice: number;
+  entryPrice: number;
+  positionSize: number;
+  commission: number;
+  closeDate: Timestamp;
+}
+
 interface TradeAnalyticsSummary {
   totalNetPnl: number;
   winRate: number;
@@ -40,6 +50,80 @@ interface TradeAnalyticsSummary {
   equityCurve: { date: string; equity: number }[];
   pnlPerAsset: { ticker: string; pnl: number }[];
 }
+
+const calculatePnL = (trade: Trade) => {
+  let pnl;
+  if (trade.position === 'Long') {
+    pnl =
+      (trade.exitPrice - trade.entryPrice) * trade.positionSize -
+      trade.commission;
+  } else {
+    pnl =
+      (trade.entryPrice - trade.exitPrice) * trade.positionSize -
+      trade.commission;
+  }
+  return pnl;
+};
+
+const calculateAnalytics = (trades: Trade[]): TradeAnalyticsSummary => {
+  if (!trades || trades.length === 0) {
+    return {
+      totalNetPnl: 0,
+      winRate: 0,
+      profitFactor: 0,
+      avgWin: 0,
+      avgLoss: 0,
+      equityCurve: [],
+      pnlPerAsset: [],
+    };
+  }
+
+  const tradesWithPnl = trades.map(trade => ({
+    ...trade,
+    pnl: calculatePnL(trade),
+    closeDateObject: trade.closeDate.toDate(),
+  })).sort((a, b) => a.closeDateObject.getTime() - b.closeDateObject.getTime());
+
+  const totalNetPnl = tradesWithPnl.reduce((acc, trade) => acc + trade.pnl, 0);
+  const winningTrades = tradesWithPnl.filter(trade => trade.pnl > 0);
+  const losingTrades = tradesWithPnl.filter(trade => trade.pnl < 0);
+
+  const winRate = (winningTrades.length / trades.length) * 100;
+  
+  const totalGains = winningTrades.reduce((acc, trade) => acc + trade.pnl, 0);
+  const totalLosses = Math.abs(losingTrades.reduce((acc, trade) => acc + trade.pnl, 0));
+
+  const profitFactor = totalLosses > 0 ? totalGains / totalLosses : Infinity;
+  const avgWin = winningTrades.length > 0 ? totalGains / winningTrades.length : 0;
+  const avgLoss = losingTrades.length > 0 ? totalLosses / losingTrades.length : 0;
+
+  let cumulativeEquity = 0;
+  const equityCurve = tradesWithPnl.map(trade => {
+    cumulativeEquity += trade.pnl;
+    return {
+      date: trade.closeDateObject.toLocaleDateString('id-ID', { month: 'short', day: 'numeric' }),
+      equity: cumulativeEquity,
+    };
+  });
+  
+  const pnlPerAsset = Object.values(tradesWithPnl.reduce((acc, trade) => {
+    if (!acc[trade.ticker]) {
+      acc[trade.ticker] = { ticker: trade.ticker, pnl: 0 };
+    }
+    acc[trade.ticker].pnl += trade.pnl;
+    return acc;
+  }, {} as Record<string, { ticker: string; pnl: number }>));
+
+  return {
+    totalNetPnl,
+    winRate,
+    profitFactor,
+    avgWin,
+    avgLoss,
+    equityCurve,
+    pnlPerAsset,
+  };
+};
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('id-ID', {
@@ -67,7 +151,7 @@ const KPI_CARDS = [
     title: 'Profit Factor',
     key: 'profitFactor',
     icon: Goal,
-    format: (v: number) => v.toFixed(2),
+    format: (v: number) => isFinite(v) ? v.toFixed(2) : '∞',
   },
   {
     title: 'Rata-rata Kemenangan',
@@ -85,15 +169,16 @@ const KPI_CARDS = [
 
 export default function DashboardPage() {
   const { user } = useUser();
-  const analyticsDocRef = useMemo(
+  const tradesQuery = useMemo(
     () =>
       user
-        ? doc(firestore, 'users', user.uid, 'analytics', 'summary')
+        ? query(collection(firestore, 'users', user.uid, 'trades'), orderBy('closeDate', 'asc'))
         : null,
     [user]
   );
   
-  const { data: analytics, loading } = useDoc<TradeAnalyticsSummary>(analyticsDocRef);
+  const { data: trades, loading } = useCollection<Trade>(tradesQuery);
+  const analytics = useMemo(() => trades ? calculateAnalytics(trades) : null, [trades]);
 
   const renderKpiCards = () => {
     if (loading || !analytics) {
@@ -126,7 +211,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-1 flex-col gap-4">
       <div className="flex items-center">
         <h1 className="text-lg font-semibold md:text-2xl">
           Dashboard
@@ -188,7 +273,6 @@ export default function DashboardPage() {
                           tickLine={false}
                           axisLine={false}
                           tickMargin={8}
-                          tickFormatter={(value) => value.slice(0, 3)}
                         />
                         <YAxis tickFormatter={(value) => formatCurrency(value)} />
                         <Tooltip
