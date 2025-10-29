@@ -26,24 +26,13 @@ export default function AuthStateGate({ children }: { children: ReactNode }) {
     }
   }, [user, loading, pathname, router]);
 
-  // While loading, we don't render anything to avoid flashes of incorrect content
-  if (loading) {
-    return null;
-  }
-  
+  // While loading, or if a redirect is imminent, show nothing to prevent flicker.
   const isPublicPath = publicPaths.includes(pathname);
   const isDashboardPath = pathname.startsWith('/dashboard');
 
-  // If user is logged in, only show dashboard routes.
-  if (user && !isDashboardPath) {
+  if (loading || (user && isPublicPath) || (!user && isDashboardPath)) {
     return null;
   }
   
-  // If user is logged out, only show public routes.
-  if (!user && !isPublicPath) {
-    return null;
-  }
-
-
   return <>{children}</>;
 }
