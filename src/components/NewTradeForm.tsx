@@ -57,9 +57,7 @@ const tradeSchema = z
     exitPrice: z.coerce.number().positive('Harga keluar harus positif'),
     positionSize: z.coerce.number().positive('Ukuran posisi harus positif'),
     commission: z.coerce.number().min(0, 'Komisi tidak boleh negatif'),
-    strategy: z
-      .enum(['Breakout', 'Support/Resistance', 'Trend Following'])
-      .optional(),
+    strategy: z.string().optional(),
     journalNotes: z.string().optional(),
     executionRating: z.coerce.number().min(1).max(5),
   })
@@ -96,7 +94,7 @@ export default function NewTradeForm({ onSuccess }: NewTradeFormProps) {
       assetType: 'Saham',
       position: 'Long',
       commission: 0,
-      strategy: 'Breakout',
+      strategy: '',
       journalNotes: '',
       executionRating: 5,
       openDate: undefined,
@@ -139,11 +137,26 @@ export default function NewTradeForm({ onSuccess }: NewTradeFormProps) {
         });
         
         const lastTrade = trades[0];
+        const updates: { assetType?: AssetType; strategy?: string } = {};
+
         if (lastTrade.assetType) {
           setValue('assetType', lastTrade.assetType);
+          updates.assetType = lastTrade.assetType;
+        }
+        if (lastTrade.strategy) {
+          setValue('strategy', lastTrade.strategy);
+          updates.strategy = lastTrade.strategy;
+        }
+
+        if (Object.keys(updates).length > 0) {
+           const description = [
+            updates.assetType ? `Tipe aset diatur ke "${updates.assetType}"` : '',
+            updates.strategy ? `Strategi diatur ke "${updates.strategy}"` : ''
+          ].filter(Boolean).join('. ');
+
           toast({
             title: 'Template Terisi',
-            description: `Tipe aset untuk ${ticker.toUpperCase()} diatur menjadi "${lastTrade.assetType}".`,
+            description: `${description}.`,
           });
         }
       }
@@ -461,25 +474,9 @@ export default function NewTradeForm({ onSuccess }: NewTradeFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Strategi/Setup</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih strategi" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="Breakout">Breakout</SelectItem>
-                    <SelectItem value="Support/Resistance">
-                      Support/Resistance
-                    </SelectItem>
-                    <SelectItem value="Trend Following">
-                      Trend Following
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <Input placeholder="cth. Breakout, Trend Following" {...field} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
