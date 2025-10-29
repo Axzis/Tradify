@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  getAuth,
   createUserWithEmailAndPassword,
   updateProfile,
 } from 'firebase/auth';
+import { useAuth } from '@/firebase';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,7 +30,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const auth = getAuth();
+  const auth = useAuth();
 
   const handleSignUp = async () => {
     if (!name) {

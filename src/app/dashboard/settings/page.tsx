@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useUser } from '@/firebase';
+import { useUser, useAuth } from '@/firebase';
 import {
-  getAuth,
   updateProfile,
   sendPasswordResetEmail,
   User,
@@ -42,7 +41,7 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function SettingsPage() {
   const { user } = useUser();
-  const auth = getAuth();
+  const auth = useAuth();
   const { toast } = useToast();
   const [isPasswordResetLoading, setIsPasswordResetLoading] = useState(false);
 
