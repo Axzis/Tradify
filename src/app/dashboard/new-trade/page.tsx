@@ -11,7 +11,7 @@ import {
 export default function NewTradePage() {
   return (
     <>
-      <div className="flex items-center">
+      <div className="flex items-center mb-4">
         <h1 className="text-lg font-semibold md:text-2xl">
           Tambah Trade Baru
         </h1>

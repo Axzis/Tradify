@@ -255,7 +255,7 @@ export default function TradeHistoryPage() {
   };
 
   return (
-    <>
+    <div className="flex flex-col gap-4">
       <div className="flex items-center">
         <h1 className="text-lg font-semibold md:text-2xl">
           Riwayat Trade
@@ -435,6 +435,6 @@ export default function TradeHistoryPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }

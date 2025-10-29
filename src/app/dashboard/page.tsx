@@ -126,15 +126,15 @@ export default function DashboardPage() {
   };
 
   return (
-    <>
-      <div className="flex items-center mb-4">
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center">
         <h1 className="text-lg font-semibold md:text-2xl">
           Dashboard
         </h1>
       </div>
-      <div>
+      
         {loading ? (
-          <div className="flex flex-1 flex-col gap-4">
+          <>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
               {renderKpiCards()}
             </div>
@@ -156,9 +156,9 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             </div>
-          </div>
+          </>
         ) : !analytics || !analytics.equityCurve || analytics.equityCurve.length === 0 ? (
-          <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm h-64 mt-4">
+          <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm h-64">
             <div className="flex flex-col items-center gap-1 text-center">
               <h3 className="text-2xl font-bold tracking-tight">
                 Belum ada data trade
@@ -169,7 +169,7 @@ export default function DashboardPage() {
             </div>
           </div>
         ) : (
-          <div className="flex flex-1 flex-col gap-4">
+          <>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
               {renderKpiCards()}
             </div>
@@ -253,9 +253,8 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             </div>
-          </div>
+          </>
         )}
-      </div>
-    </>
+    </div>
   );
 }
