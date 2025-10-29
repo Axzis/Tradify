@@ -1,114 +1,78 @@
 {
   "entities": {
-    "User": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "User",
+    "UserProfile": {
+      "title": "User Profile",
       "type": "object",
-      "description": "Represents a user of the Tradify application.",
+      "description": "Represents a user's public profile information.",
       "properties": {
-        "id": {
+        "displayName": {
           "type": "string",
-          "description": "Unique identifier for the user entity."
+          "description": "The user's display name."
+        },
+        "photoURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the user's profile picture."
         },
         "email": {
           "type": "string",
-          "description": "User's email address.",
-          "format": "email"
-        },
-        "registrationDate": {
-          "type": "string",
-          "description": "Date and time when the user registered.",
-          "format": "date-time"
+          "format": "email",
+          "description": "The user's email address."
         }
       },
-      "required": [
-        "id",
-        "email",
-        "registrationDate"
-      ]
+      "required": ["displayName", "email"]
+    },
+    "Trade": {
+      "title": "Trade",
+      "type": "object",
+      "description": "Represents a single trading transaction.",
+      "properties": {
+        "userId": { "type": "string", "description": "The ID of the user who made the trade." },
+        "ticker": { "type": "string", "description": "The stock/crypto/forex ticker symbol." },
+        "position": { "type": "string", "enum": ["Long", "Short"] },
+        "assetType": { "type": "string", "enum": ["Saham", "Kripto", "Forex"] },
+        "entryPrice": { "type": "number" },
+        "exitPrice": { "type": "number" },
+        "positionSize": { "type": "number" },
+        "commission": { "type": "number" },
+        "openDate": { "type": "string", "format": "date-time" },
+        "closeDate": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "strategy": { "type": "string" },
+        "journalNotes": { "type": "string" },
+        "executionRating": { "type": "number", "minimum": 1, "maximum": 5 }
+      },
+      "required": ["userId", "ticker", "position", "assetType", "entryPrice", "exitPrice", "positionSize", "createdAt"]
     },
     "EquityTransaction": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "EquityTransaction",
+      "title": "Equity Transaction",
       "type": "object",
-      "description": "Represents a transaction affecting the user's equity (modal).",
+      "description": "Represents a transaction that affects user's equity, like deposits or withdrawals.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the equity transaction."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N EquityTransaction)"
-        },
-        "transactionType": {
-          "type": "string",
-          "description": "Type of equity transaction (deposit, transfer, profit)."
-        },
-        "amount": {
-          "type": "number",
-          "description": "Amount of the equity transaction."
-        },
-        "transactionDate": {
-          "type": "string",
-          "description": "Date and time of the equity transaction.",
-          "format": "date-time"
-        }
+        "userId": { "type": "string" },
+        "type": { "type": "string", "enum": ["deposit", "transfer", "profit"] },
+        "amount": { "type": "number" },
+        "date": { "type": "string", "format": "date-time" },
+        "notes": { "type": "string" }
       },
-      "required": [
-        "id",
-        "userId",
-        "transactionType",
-        "amount",
-        "transactionDate"
-      ]
+      "required": ["userId", "type", "amount", "date"]
     }
   },
   "auth": {
-    "providers": [
-      "password",
-      "anonymous"
-    ]
+    "providers": ["password", "anonymous"]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user profiles.  Path-based ownership ensures only the authenticated user can access their profile.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/equityTransactions/{transactionId}",
-        "definition": {
-          "entityName": "EquityTransaction",
-          "schema": {
-            "$ref": "#/backend/entities/EquityTransaction"
-          },
-          "description": "Stores equity transactions for each user. Path-based ownership ensures only the authenticated user can access their equity transactions.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user."
-            },
-            {
-              "name": "transactionId",
-              "description": "The unique identifier for the equity transaction."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "The Firestore structure is designed to store user data and equity transactions. User data is stored in a dedicated collection `/users/{userId}`. Equity transactions are stored in a subcollection `/users/{userId}/equityTransactions/{transactionId}`. This structure prioritizes authorization independence and supports the required QAPs by leveraging path-based ownership for user data and transactions. Each user's data and transactions are isolated, ensuring secure list operations and clear ownership."
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Stores user profile information."
+    },
+    "/users/{userId}/trades/{tradeId}": {
+      "schema": { "$ref": "#/entities/Trade" },
+      "description": "Stores individual trade records for each user."
+    },
+    "/users/{userId}/equityTransactions/{equityTransactionId}": {
+      "schema": { "$ref": "#/entities/EquityTransaction" },
+      "description": "Stores equity transactions like deposits and withdrawals for each user."
+    }
   }
 }

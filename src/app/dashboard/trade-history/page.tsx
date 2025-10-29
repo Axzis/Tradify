@@ -2,8 +2,7 @@
 
 import { useState, useMemo, memo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/firebase';
-import { firestore } from '@/firebase/config';
+import { useUser, useFirestore } from '@/firebase';
 import {
   collection,
   query,
@@ -180,6 +179,7 @@ MemoizedTableRow.displayName = 'MemoizedTableRow';
 
 export default function TradeHistoryPage() {
   const { user } = useUser();
+  const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
@@ -196,7 +196,7 @@ export default function TradeHistoryPage() {
             limit(50)
           )
         : null,
-    [user]
+    [user, firestore]
   );
   const { data: trades, loading } = useCollection<Trade>(tradesQuery);
 
@@ -242,8 +242,8 @@ export default function TradeHistoryPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center">
+    <div className="w-full">
+      <div className="flex items-center mb-4">
         <h1 className="text-lg font-semibold md:text-2xl">
           Riwayat Trade
         </h1>

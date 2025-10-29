@@ -4,6 +4,7 @@ export type AssetType = 'Saham' | 'Kripto' | 'Forex';
 
 export interface Trade {
   id: string;
+  userId: string;
   ticker: string;
   position: 'Long' | 'Short';
   exitPrice: number;

@@ -14,8 +14,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/firebase';
-import { firestore } from '@/firebase/config';
+import { useUser, useFirestore } from '@/firebase';
 import {
   collection,
   addDoc,
@@ -126,6 +125,7 @@ export default function NewTradeForm({ onSuccess }: NewTradeFormProps) {
   const [mode, setMode] = useState<'simple' | 'advanced'>('simple');
   const { toast } = useToast();
   const { user } = useUser();
+  const firestore = useFirestore();
   const form = useForm<TradeFormData>({
     resolver: zodResolver(tradeSchema),
     defaultValues: {
@@ -215,7 +215,7 @@ export default function NewTradeForm({ onSuccess }: NewTradeFormProps) {
         console.error('Error fetching last trade by ticker:', error);
       }
     },
-    [user, setValue, toast]
+    [user, setValue, toast, firestore]
   );
 
   const onSubmit = async (data: TradeFormData) => {

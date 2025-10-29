@@ -1,8 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useUser } from '@/firebase';
-import { firestore } from '@/firebase/config';
+import { useUser, useFirestore } from '@/firebase';
 import { collection, query, orderBy, Timestamp } from 'firebase/firestore';
 import useCollection from '@/hooks/use-collection';
 import {
@@ -162,6 +161,7 @@ const formatCurrencyUSD = (value: number) => {
 
 export default function DashboardPage() {
   const { user } = useUser();
+  const firestore = useFirestore();
   const { idrRate, loading: currencyLoading } = useCurrency();
 
   const tradesQuery = useMemo(
@@ -169,7 +169,7 @@ export default function DashboardPage() {
       user
         ? query(collection(firestore, 'users', user.uid, 'trades'), orderBy('closeDate', 'asc'))
         : null,
-    [user]
+    [user, firestore]
   );
   
   const { data: trades, loading: tradesLoading } = useCollection<Trade>(tradesQuery);
@@ -321,7 +321,7 @@ export default function DashboardPage() {
         </div>
       ) : (
         <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {renderKpiCards()}
           </div>
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
