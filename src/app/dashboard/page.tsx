@@ -28,7 +28,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TrendingUp, TrendingDown, Percent, Wallet, Goal } from 'lucide-react';
+import { TrendingUp, TrendingDown, Percent, Wallet, Goal, ShieldAlert, BadgeDollarSign, Scale } from 'lucide-react';
 import { Trade } from '@/types/trade';
 import useCurrency from '@/hooks/use-currency';
 
@@ -38,6 +38,8 @@ interface TradeAnalyticsSummary {
   profitFactor: number;
   avgWin: number;
   avgLoss: number;
+  totalGains: number;
+  totalLosses: number;
   equityCurve: { date: string; equity: number }[];
   pnlPerAsset: { ticker: string; pnl: number }[];
 }
@@ -66,6 +68,8 @@ const calculateAnalytics = (trades: Trade[]): TradeAnalyticsSummary => {
       profitFactor: 0,
       avgWin: 0,
       avgLoss: 0,
+      totalGains: 0,
+      totalLosses: 0,
       equityCurve: [],
       pnlPerAsset: [],
     };
@@ -87,6 +91,8 @@ const calculateAnalytics = (trades: Trade[]): TradeAnalyticsSummary => {
       profitFactor: 0,
       avgWin: 0,
       avgLoss: 0,
+      totalGains: 0,
+      totalLosses: 0,
       equityCurve: [],
       pnlPerAsset: [],
     };
@@ -129,6 +135,8 @@ const calculateAnalytics = (trades: Trade[]): TradeAnalyticsSummary => {
     profitFactor,
     avgWin,
     avgLoss,
+    totalGains,
+    totalLosses,
     equityCurve,
     pnlPerAsset,
   };
@@ -138,8 +146,8 @@ const formatCurrencyIDR = (value: number) => {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(value);
 };
 
@@ -171,9 +179,23 @@ export default function DashboardPage() {
 
   const KPI_CARDS = useMemo(() => [
     {
-      title: 'Total P&L Bersih',
+      title: 'Ekuitas (P&L Bersih)',
       key: 'totalNetPnl',
       icon: Wallet,
+      format: (v: number) => formatCurrencyIDR(v * idrRate),
+      subValue: (v: number) => formatCurrencyUSD(v),
+    },
+     {
+      title: 'Total Keuntungan',
+      key: 'totalGains',
+      icon: TrendingUp,
+      format: (v: number) => formatCurrencyIDR(v * idrRate),
+      subValue: (v: number) => formatCurrencyUSD(v),
+    },
+    {
+      title: 'Total Kerugian',
+      key: 'totalLosses',
+      icon: TrendingDown,
       format: (v: number) => formatCurrencyIDR(v * idrRate),
       subValue: (v: number) => formatCurrencyUSD(v),
     },
@@ -192,13 +214,13 @@ export default function DashboardPage() {
     {
       title: 'Rata-rata Kemenangan',
       key: 'avgWin',
-      icon: TrendingUp,
+      icon: BadgeDollarSign,
       format: (v: number) => formatCurrencyIDR(v * idrRate),
     },
     {
       title: 'Rata-rata Kerugian',
       key: 'avgLoss',
-      icon: TrendingDown,
+      icon: ShieldAlert,
       format: (v: number) => formatCurrencyIDR(v * idrRate),
     },
   ], [idrRate]);
@@ -257,14 +279,14 @@ export default function DashboardPage() {
 
 
   return (
-    <div className="flex-1 space-y-4">
+    <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
       </div>
       
       {tradesLoading ? (
         <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {renderKpiCards()}
           </div>
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
@@ -299,7 +321,7 @@ export default function DashboardPage() {
         </div>
       ) : (
         <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {renderKpiCards()}
           </div>
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
