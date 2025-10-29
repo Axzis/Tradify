@@ -2,7 +2,7 @@
 
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { FirebaseProvider } from '@/firebase/provider';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 import AuthStateGate from '@/components/auth-state-gate';
 
 export default function RootLayout({
@@ -14,10 +14,10 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <head/>
       <body className="font-body antialiased">
-        <FirebaseProvider>
+        <FirebaseClientProvider>
           <AuthStateGate>{children}</AuthStateGate>
           <Toaster />
-        </FirebaseProvider>
+        </FirebaseClientProvider>
       </body>
     </html>
   );
