@@ -1,38 +1,61 @@
 'use client';
 
 import { useUser } from '@/firebase/provider';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, type ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
+import type { ReactNode } from 'react';
+import { Loader2 } from 'lucide-react';
+import LoginPage from '@/app/login/page';
+import DashboardPage from '@/app/dashboard/page';
 
 const publicPaths = ['/', '/login', '/register'];
 
+/**
+ * A component that gates content based on authentication status.
+ * It handles rendering the correct component based on auth state
+ * to avoid race conditions with redirects.
+ */
 export default function AuthStateGate({ children }: { children: ReactNode }) {
-  const { user, loading } = useUser();
+  const { user, isUserLoading } = useUser();
   const pathname = usePathname();
-  const router = useRouter();
 
-  useEffect(() => {
-    if (loading) return;
+  const isPublic = publicPaths.includes(pathname);
+  const isDashboard = pathname.startsWith('/dashboard');
 
-    const isPublicPath = publicPaths.includes(pathname);
-    const isDashboardPath = pathname.startsWith('/dashboard');
-
-    if (user && isPublicPath) {
-      // User is logged in but on a public page, redirect to dashboard
-      router.push('/dashboard');
-    } else if (!user && isDashboardPath) {
-      // User is not logged in but trying to access a protected page, redirect to login
-      router.push('/login');
-    }
-  }, [user, loading, pathname, router]);
-
-  // While loading, or if a redirect is imminent, show nothing to prevent flicker.
-  const isPublicPath = publicPaths.includes(pathname);
-  const isDashboardPath = pathname.startsWith('/dashboard');
-
-  if (loading || (user && isPublicPath) || (!user && isDashboardPath)) {
-    return null;
+  // While checking auth status, show a loader
+  if (isUserLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
-  
-  return <>{children}</>;
+
+  // If user is logged in...
+  if (user) {
+    // ...but is on a public page, render the dashboard directly
+    // This avoids a redirect race condition.
+    if (isPublic) {
+      return <DashboardPage />;
+    }
+    // ...and is on a dashboard page, show the content.
+    return <>{children}</>;
+  }
+
+  // If user is NOT logged in...
+  if (!user) {
+    // ...and is trying to access a protected dashboard page,
+    // render the login page directly.
+    if (isDashboard) {
+      return <LoginPage />;
+    }
+    // ...and is on a public page, show the content.
+    return <>{children}</>;
+  }
+
+  // Fallback to showing a loader as a safe default
+  return (
+    <div className="flex h-screen w-full items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin" />
+    </div>
+  );
 }
