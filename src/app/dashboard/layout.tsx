@@ -137,7 +137,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     setIsLoggingOut(true);
     try {
       await signOut(auth);
-      router.push('/');
+      // Let AuthStateGate handle the redirect
     } catch (error: any) {
       toast({
         variant: 'destructive',

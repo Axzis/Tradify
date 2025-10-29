@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useUser, useFirestore } from '@/firebase';
 import { collection, query, orderBy, Timestamp } from 'firebase/firestore';
-import useCollection from '@/hooks/use-collection';
+import { useCollection } from '@/firebase/firestore/use-collection';
 import {
   Card,
   CardContent,
@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/chart';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, TrendingDown, Percent, Wallet, Goal, ShieldAlert, BadgeDollarSign, Scale } from 'lucide-react';
-import { Trade } from '@/types/trade';
+import type { Trade } from '@/types/trade';
 import useCurrency from '@/hooks/use-currency';
 
 interface TradeAnalyticsSummary {
@@ -172,7 +172,7 @@ export default function DashboardPage() {
     [user, firestore]
   );
   
-  const { data: trades, loading: tradesLoading } = useCollection<Trade>(tradesQuery);
+  const { data: trades, isLoading: tradesLoading } = useCollection<Trade>(tradesQuery);
   const analytics = useMemo(() => trades ? calculateAnalytics(trades) : null, [trades]);
 
   const loading = tradesLoading || currencyLoading;

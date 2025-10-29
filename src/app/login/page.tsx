@@ -32,7 +32,8 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push('/dashboard');
+      // Let AuthStateGate handle the redirect
+      // router.push('/dashboard'); 
     } catch (error: any) {
       let description = error.message;
       if (error.code === 'auth/network-request-failed') {

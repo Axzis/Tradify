@@ -51,7 +51,7 @@ export default function RegisterPage() {
       // Update the user's profile with the name
       await updateProfile(userCredential.user, { displayName: name });
       // You might want to also save the user's name to Firestore here
-      router.push('/dashboard');
+      // Let AuthStateGate handle the redirect
     } catch (error: any) {
       let description = error.message;
       if (error.code === 'auth/network-request-failed') {

@@ -12,7 +12,7 @@ import {
   deleteDoc,
   limit,
 } from 'firebase/firestore';
-import useCollection from '@/hooks/use-collection';
+import { useCollection } from '@/firebase/firestore/use-collection';
 import {
   Table,
   TableBody,
@@ -51,7 +51,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Star, Trash, Pencil, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Trade } from '@/types/trade';
+import type { Trade } from '@/types/trade';
 
 const calculatePnL = (trade: Trade) => {
   if (!trade.entryPrice || !trade.exitPrice || !trade.positionSize) return 0;
@@ -198,7 +198,7 @@ export default function TradeHistoryPage() {
         : null,
     [user, firestore]
   );
-  const { data: trades, loading } = useCollection<Trade>(tradesQuery);
+  const { data: trades, isLoading } = useCollection<Trade>(tradesQuery);
 
   const handleRowClick = (trade: Trade) => {
     setSelectedTrade(trade);
@@ -263,7 +263,7 @@ export default function TradeHistoryPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading ? (
+              {isLoading ? (
                 Array.from({ length: 5 }).map((_, index) => (
                   <TableRow key={index}>
                     <TableCell>
