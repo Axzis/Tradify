@@ -251,188 +251,186 @@ export default function TradeHistoryPage() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto">
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center">
-          <h1 className="text-lg font-semibold md:text-2xl">
-            Riwayat Trade
-          </h1>
-        </div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Transaksi Anda</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Tanggal Tutup</TableHead>
-                  <TableHead>Simbol</TableHead>
-                  <TableHead>Arah</TableHead>
-                  <TableHead className="text-right">P&L (Bersih)</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  Array.from({ length: 5 }).map((_, index) => (
-                    <TableRow key={index}>
-                      <TableCell>
-                        <Skeleton className="h-4 w-[150px]" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-[80px]" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-[50px]" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Skeleton className="h-4 w-[100px] ml-auto" />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : trades && trades.length > 0 ? (
-                  trades.map((trade) => (
-                    <MemoizedTableRow key={trade.id} trade={trade} onRowClick={handleRowClick} />
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
-                      Belum ada riwayat transaksi.
+    <>
+      <div className="flex items-center">
+        <h1 className="text-lg font-semibold md:text-2xl">
+          Riwayat Trade
+        </h1>
+      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Transaksi Anda</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Tanggal Tutup</TableHead>
+                <TableHead>Simbol</TableHead>
+                <TableHead>Arah</TableHead>
+                <TableHead className="text-right">P&L (Bersih)</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                Array.from({ length: 5 }).map((_, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <Skeleton className="h-4 w-[150px]" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-[80px]" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-[50px]" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-4 w-[100px] ml-auto" />
                     </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                ))
+              ) : trades && trades.length > 0 ? (
+                trades.map((trade) => (
+                  <MemoizedTableRow key={trade.id} trade={trade} onRowClick={handleRowClick} />
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="h-24 text-center">
+                    Belum ada riwayat transaksi.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
-        {/* Detail Dialog */}
-        <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
-          <DialogContent className="sm:max-w-lg">
-            {selectedTrade && (
-              <>
-                <DialogHeader>
-                  <DialogTitle>Detail Trade: {selectedTrade.ticker}</DialogTitle>
-                  <DialogDescription>
-                    {formatDate(selectedTrade.openDate)} -{' '}
-                    {formatDate(selectedTrade.closeDate)}
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4 text-sm">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <span className="text-muted-foreground">P&L Bersih: </span>
-                      <span
-                        className={cn(
-                          calculatePnL(selectedTrade) >= 0
-                            ? 'text-green-400'
-                            : 'text-red-400',
-                          'font-semibold'
-                        )}
-                      >
-                        {formatCurrency(calculatePnL(selectedTrade))}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Tipe Aset: </span>{' '}
-                      {selectedTrade.assetType}
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Arah: </span>{' '}
-                      {selectedTrade.position}
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Strategi: </span>
-                      <Badge variant="secondary">
-                        {selectedTrade.strategy || 'N/A'}
-                      </Badge>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Rating: </span>
-                      <RenderRating
-                        rating={selectedTrade.executionRating || 0}
-                      />
-                    </div>
+      {/* Detail Dialog */}
+      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          {selectedTrade && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Detail Trade: {selectedTrade.ticker}</DialogTitle>
+                <DialogDescription>
+                  {formatDate(selectedTrade.openDate)} -{' '}
+                  {formatDate(selectedTrade.closeDate)}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4 text-sm">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="text-muted-foreground">P&L Bersih: </span>
+                    <span
+                      className={cn(
+                        calculatePnL(selectedTrade) >= 0
+                          ? 'text-green-400'
+                          : 'text-red-400',
+                        'font-semibold'
+                      )}
+                    >
+                      {formatCurrency(calculatePnL(selectedTrade))}
+                    </span>
                   </div>
-                  <div className="grid grid-cols-3 gap-4 border-t pt-4 mt-2">
-                    <div>
-                      <span className="text-muted-foreground block">
-                        Harga Masuk
-                      </span>{' '}
-                      {formatCurrency(selectedTrade.entryPrice)}
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground block">
-                        Harga Keluar
-                      </span>{' '}
-                      {formatCurrency(selectedTrade.exitPrice)}
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground block">
-                        Ukuran Posisi
-                      </span>{' '}
-                      {selectedTrade.positionSize}
-                    </div>
+                  <div>
+                    <span className="text-muted-foreground">Tipe Aset: </span>{' '}
+                    {selectedTrade.assetType}
                   </div>
-                  {selectedTrade.journalNotes && (
-                    <div className="border-t pt-4 mt-2">
-                      <h4 className="font-semibold mb-2">
-                        Catatan Jurnal (Psikologi)
-                      </h4>
-                      <p className="text-muted-foreground bg-secondary/50 p-3 rounded-md whitespace-pre-wrap">
-                        {selectedTrade.journalNotes}
-                      </p>
-                    </div>
-                  )}
+                  <div>
+                    <span className="text-muted-foreground">Arah: </span>{' '}
+                    {selectedTrade.position}
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Strategi: </span>
+                    <Badge variant="secondary">
+                      {selectedTrade.strategy || 'N/A'}
+                    </Badge>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Rating: </span>
+                    <RenderRating
+                      rating={selectedTrade.executionRating || 0}
+                    />
+                  </div>
                 </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={handleEdit}>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={() => setIsDeleteDialogOpen(true)}
-                    disabled={isDeleting}
-                  >
-                    <Trash className="mr-2 h-4 w-4" />
-                    Hapus
-                  </Button>
-                </DialogFooter>
-              </>
-            )}
-          </DialogContent>
-        </Dialog>
+                <div className="grid grid-cols-3 gap-4 border-t pt-4 mt-2">
+                  <div>
+                    <span className="text-muted-foreground block">
+                      Harga Masuk
+                    </span>{' '}
+                    {formatCurrency(selectedTrade.entryPrice)}
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block">
+                      Harga Keluar
+                    </span>{' '}
+                    {formatCurrency(selectedTrade.exitPrice)}
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block">
+                      Ukuran Posisi
+                    </span>{' '}
+                    {selectedTrade.positionSize}
+                  </div>
+                </div>
+                {selectedTrade.journalNotes && (
+                  <div className="border-t pt-4 mt-2">
+                    <h4 className="font-semibold mb-2">
+                      Catatan Jurnal (Psikologi)
+                    </h4>
+                    <p className="text-muted-foreground bg-secondary/50 p-3 rounded-md whitespace-pre-wrap">
+                      {selectedTrade.journalNotes}
+                    </p>
+                  </div>
+                )}
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={handleEdit}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  disabled={isDeleting}
+                >
+                  <Trash className="mr-2 h-4 w-4" />
+                  Hapus
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
-        {/* Delete Confirmation Dialog */}
-        <AlertDialog
-          open={isDeleteDialogOpen}
-          onOpenChange={setIsDeleteDialogOpen}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Tindakan ini tidak dapat dibatalkan. Ini akan menghapus data trade
-                secara permanen dari server.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={isDeleting}>Batal</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteConfirm}
-                disabled={isDeleting}
-                className="bg-destructive hover:bg-destructive/90"
-              >
-                {isDeleting ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : null}
-                Ya, Hapus
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
-    </div>
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tindakan ini tidak dapat dibatalkan. Ini akan menghapus data trade
+              secara permanen dari server.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              Ya, Hapus
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

@@ -10,22 +10,20 @@ import {
 
 export default function NewTradePage() {
   return (
-    <div className="w-full max-w-6xl mx-auto">
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center">
-          <h1 className="text-lg font-semibold md:text-2xl">
-            Tambah Trade Baru
-          </h1>
-        </div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Detail Transaksi</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <NewTradeForm />
-          </CardContent>
-        </Card>
+    <>
+      <div className="flex items-center">
+        <h1 className="text-lg font-semibold md:text-2xl">
+          Tambah Trade Baru
+        </h1>
       </div>
-    </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Detail Transaksi</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <NewTradeForm />
+        </CardContent>
+      </Card>
+    </>
   );
 }
