@@ -143,10 +143,14 @@ export default function NewTradeForm({ onSuccess }: NewTradeFormProps) {
           setValue('assetType', lastTrade.assetType);
           updates.assetType = lastTrade.assetType;
         }
+
+        // Set strategy, default to empty string if not present
+        const strategyToSet = lastTrade.strategy || '';
+        setValue('strategy', strategyToSet);
         if (lastTrade.strategy) {
-          setValue('strategy', lastTrade.strategy);
           updates.strategy = lastTrade.strategy;
         }
+
 
         if (Object.keys(updates).length > 0) {
            const description = [
