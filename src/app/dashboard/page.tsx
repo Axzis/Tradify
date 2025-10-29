@@ -30,7 +30,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, TrendingDown, Percent, Wallet, Goal } from 'lucide-react';
 import { Trade } from '@/types/trade';
-
+import useCurrency from '@/hooks/use-currency';
 
 interface TradeAnalyticsSummary {
   totalNetPnl: number;
@@ -42,6 +42,7 @@ interface TradeAnalyticsSummary {
   pnlPerAsset: { ticker: string; pnl: number }[];
 }
 
+// Assume PnL is calculated in USD
 const calculatePnL = (trade: Trade) => {
   if (!trade.entryPrice || !trade.exitPrice || !trade.positionSize) return 0;
   let pnl;
@@ -133,7 +134,7 @@ const calculateAnalytics = (trades: Trade[]): TradeAnalyticsSummary => {
   };
 };
 
-const formatCurrency = (value: number) => {
+const formatCurrencyIDR = (value: number) => {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
@@ -142,41 +143,19 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
-const KPI_CARDS = [
-  {
-    title: 'Total P&L Bersih',
-    key: 'totalNetPnl',
-    icon: Wallet,
-    format: formatCurrency,
-  },
-  {
-    title: 'Win Rate',
-    key: 'winRate',
-    icon: Percent,
-    format: (v: number) => `${v.toFixed(2)}%`,
-  },
-  {
-    title: 'Profit Factor',
-    key: 'profitFactor',
-    icon: Goal,
-    format: (v: number) => isFinite(v) ? v.toFixed(2) : '∞',
-  },
-  {
-    title: 'Rata-rata Kemenangan',
-    key: 'avgWin',
-    icon: TrendingUp,
-    format: formatCurrency,
-  },
-  {
-    title: 'Rata-rata Kerugian',
-    key: 'avgLoss',
-    icon: TrendingDown,
-    format: formatCurrency,
-  },
-];
+const formatCurrencyUSD = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  };
 
 export default function DashboardPage() {
   const { user } = useUser();
+  const { idrRate, loading: currencyLoading } = useCurrency();
+
   const tradesQuery = useMemo(
     () =>
       user
@@ -185,8 +164,44 @@ export default function DashboardPage() {
     [user]
   );
   
-  const { data: trades, loading } = useCollection<Trade>(tradesQuery);
+  const { data: trades, loading: tradesLoading } = useCollection<Trade>(tradesQuery);
   const analytics = useMemo(() => trades ? calculateAnalytics(trades) : null, [trades]);
+
+  const loading = tradesLoading || currencyLoading;
+
+  const KPI_CARDS = useMemo(() => [
+    {
+      title: 'Total P&L Bersih',
+      key: 'totalNetPnl',
+      icon: Wallet,
+      format: (v: number) => formatCurrencyIDR(v * idrRate),
+      subValue: (v: number) => formatCurrencyUSD(v),
+    },
+    {
+      title: 'Win Rate',
+      key: 'winRate',
+      icon: Percent,
+      format: (v: number) => `${v.toFixed(2)}%`,
+    },
+    {
+      title: 'Profit Factor',
+      key: 'profitFactor',
+      icon: Goal,
+      format: (v: number) => isFinite(v) ? v.toFixed(2) : '∞',
+    },
+    {
+      title: 'Rata-rata Kemenangan',
+      key: 'avgWin',
+      icon: TrendingUp,
+      format: (v: number) => formatCurrencyIDR(v * idrRate),
+    },
+    {
+      title: 'Rata-rata Kerugian',
+      key: 'avgLoss',
+      icon: TrendingDown,
+      format: (v: number) => formatCurrencyIDR(v * idrRate),
+    },
+  ], [idrRate]);
 
   const renderKpiCards = () => {
     if (loading || !analytics) {
@@ -198,6 +213,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <Skeleton className="h-8 w-3/4" />
+             {card.subValue && <Skeleton className="h-4 w-1/2 mt-1" />}
           </CardContent>
         </Card>
       ));
@@ -213,10 +229,32 @@ export default function DashboardPage() {
           <div className="text-2xl font-bold">
             {card.format((analytics as any)[card.key] || 0)}
           </div>
+          {card.subValue && (
+             <p className="text-xs text-muted-foreground">
+                {card.subValue((analytics as any)[card.key] || 0)}
+             </p>
+          )}
         </CardContent>
       </Card>
     ));
   };
+  
+  const convertedEquityCurve = useMemo(() => {
+    if (!analytics?.equityCurve) return [];
+    return analytics.equityCurve.map(point => ({
+        ...point,
+        equity: point.equity * idrRate
+    }));
+  }, [analytics, idrRate]);
+
+  const convertedPnlPerAsset = useMemo(() => {
+    if (!analytics?.pnlPerAsset) return [];
+    return analytics.pnlPerAsset.map(asset => ({
+        ...asset,
+        pnl: asset.pnl * idrRate
+    }));
+  }, [analytics, idrRate]);
+
 
   return (
     <div className="flex-1 space-y-4">
@@ -224,7 +262,7 @@ export default function DashboardPage() {
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
       </div>
       
-      {loading ? (
+      {tradesLoading ? (
         <>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             {renderKpiCards()}
@@ -272,7 +310,7 @@ export default function DashboardPage() {
               <CardContent className="pl-2">
                 <ChartContainer config={{}} className="h-[350px] w-full">
                   <ResponsiveContainer>
-                    <LineChart data={analytics.equityCurve}>
+                    <LineChart data={convertedEquityCurve}>
                       <CartesianGrid vertical={false} />
                       <XAxis
                         dataKey="date"
@@ -280,12 +318,12 @@ export default function DashboardPage() {
                         axisLine={false}
                         tickMargin={8}
                       />
-                      <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                      <YAxis tickFormatter={(value) => formatCurrencyIDR(value)} />
                       <Tooltip
                         cursor={false}
                         content={
                           <ChartTooltipContent
-                            formatter={(value) => formatCurrency(Number(value))}
+                            formatter={(value) => formatCurrencyIDR(Number(value))}
                           />
                         }
                       />
@@ -308,7 +346,7 @@ export default function DashboardPage() {
               <CardContent className="pl-2">
                 <ChartContainer config={{}} className="h-[350px] w-full">
                   <ResponsiveContainer>
-                    <BarChart data={analytics.pnlPerAsset}>
+                    <BarChart data={convertedPnlPerAsset}>
                       <CartesianGrid vertical={false} />
                       <XAxis
                         dataKey="ticker"
@@ -316,17 +354,17 @@ export default function DashboardPage() {
                         axisLine={false}
                         tickMargin={8}
                       />
-                      <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                      <YAxis tickFormatter={(value) => formatCurrencyIDR(value)} />
                       <Tooltip
                         cursor={false}
                         content={
                           <ChartTooltipContent
-                            formatter={(value) => formatCurrency(Number(value))}
+                            formatter={(value) => formatCurrencyIDR(Number(value))}
                           />
                         }
                       />
                       <Bar dataKey="pnl" radius={8}>
-                        {analytics.pnlPerAsset && analytics.pnlPerAsset.map((entry, index) => (
+                        {convertedPnlPerAsset && convertedPnlPerAsset.map((entry, index) => (
                           <Cell
                             key={`cell-${index}`}
                             fill={
