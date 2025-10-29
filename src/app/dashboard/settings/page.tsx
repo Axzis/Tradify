@@ -175,29 +175,27 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form>
-              <div className="space-y-3">
-                <Label>Tema Aplikasi</Label>
-                <RadioGroup
-                  defaultValue="dark"
-                  className="flex flex-col space-y-1"
-                  disabled // Disabled until full theme provider is implemented
-                >
-                  <div className="flex items-center space-x-3 space-y-0">
-                    <RadioGroupItem value="light" id="theme-light" />
-                    <Label htmlFor="theme-light" className="font-normal">
-                      Terang
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-3 space-y-0">
-                    <RadioGroupItem value="dark" id="theme-dark" />
-                    <Label htmlFor="theme-dark" className="font-normal">
-                      Gelap
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
-            </form>
+            <div className="space-y-3">
+              <Label>Tema Aplikasi</Label>
+              <RadioGroup
+                defaultValue="dark"
+                className="flex flex-col space-y-1"
+                disabled // Disabled until full theme provider is implemented
+              >
+                <div className="flex items-center space-x-3 space-y-0">
+                  <RadioGroupItem value="light" id="theme-light" />
+                  <Label htmlFor="theme-light" className="font-normal">
+                    Terang
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-3 space-y-0">
+                  <RadioGroupItem value="dark" id="theme-dark" />
+                  <Label htmlFor="theme-dark" className="font-normal">
+                    Gelap
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
           </CardContent>
         </Card>
       </div>

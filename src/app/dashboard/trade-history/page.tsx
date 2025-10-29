@@ -100,12 +100,16 @@ const formatDate = (date: any): string => {
   // Handle Firestore Timestamp
   if (date instanceof Timestamp) {
     d = date.toDate();
-  } 
+  }
+  // Handle string date
+  else if (typeof date === 'string') {
+    d = new Date(date);
+  }
   // Handle serialized Firestore Timestamp (plain object)
   else if (typeof date === 'object' && date !== null && 'seconds' in date && 'nanoseconds' in date && !(date instanceof Date)) {
     d = new Timestamp(date.seconds, date.nanoseconds).toDate();
   }
-  // Handle JavaScript Date object or a date string
+  // Handle JavaScript Date object
   else {
     d = new Date(date);
   }
