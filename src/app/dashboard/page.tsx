@@ -38,7 +38,7 @@ interface Trade {
   entryPrice: number;
   positionSize: number;
   commission: number;
-  closeDate: Timestamp;
+  closeDate: Timestamp | Date;
 }
 
 interface TradeAnalyticsSummary {
@@ -81,7 +81,7 @@ const calculateAnalytics = (trades: Trade[]): TradeAnalyticsSummary => {
   const tradesWithPnl = trades.map(trade => ({
     ...trade,
     pnl: calculatePnL(trade),
-    closeDateObject: trade.closeDate.toDate(),
+    closeDateObject: new Date(trade.closeDate as any),
   })).sort((a, b) => a.closeDateObject.getTime() - b.closeDateObject.getTime());
 
   const totalNetPnl = tradesWithPnl.reduce((acc, trade) => acc + trade.pnl, 0);
@@ -211,134 +211,132 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-4">
-      <div className="flex items-center">
-        <h1 className="text-lg font-semibold md:text-2xl">
-          Dashboard
-        </h1>
+    <div className="flex-1 space-y-4">
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
       </div>
       
-        {loading ? (
-          <>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-              {renderKpiCards()}
-            </div>
-            <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
-              <Card className="lg:col-span-4">
-                <CardHeader>
-                  <CardTitle>Kurva Ekuitas</CardTitle>
-                </CardHeader>
-                <CardContent className="pl-2">
-                  <Skeleton className="h-[350px] w-full" />
-                </CardContent>
-              </Card>
-              <Card className="lg:col-span-3">
-                <CardHeader>
-                  <CardTitle>P&L per Aset</CardTitle>
-                </CardHeader>
-                <CardContent className="pl-2">
-                  <Skeleton className="h-[350px] w-full" />
-                </CardContent>
-              </Card>
-            </div>
-          </>
-        ) : !analytics || !analytics.equityCurve || analytics.equityCurve.length === 0 ? (
-          <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm h-64">
-            <div className="flex flex-col items-center gap-1 text-center">
-              <h3 className="text-2xl font-bold tracking-tight">
-                Belum ada data trade
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Tambah trade baru untuk melihat analitik performa Anda.
-              </p>
-            </div>
+      {loading ? (
+        <>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+            {renderKpiCards()}
           </div>
-        ) : (
-          <>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-              {renderKpiCards()}
-            </div>
-            <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
-              <Card className="lg:col-span-4">
-                <CardHeader>
-                  <CardTitle>Kurva Ekuitas</CardTitle>
-                </CardHeader>
-                <CardContent className="pl-2">
-                  <ChartContainer config={{}} className="h-[350px] w-full">
-                    <ResponsiveContainer>
-                      <LineChart data={analytics.equityCurve}>
-                        <CartesianGrid vertical={false} />
-                        <XAxis
-                          dataKey="date"
-                          tickLine={false}
-                          axisLine={false}
-                          tickMargin={8}
-                        />
-                        <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                        <Tooltip
-                          cursor={false}
-                          content={
-                            <ChartTooltipContent
-                              formatter={(value) => formatCurrency(Number(value))}
-                            />
-                          }
-                        />
-                        <Line
-                          dataKey="equity"
-                          type="monotone"
-                          stroke="hsl(var(--primary))"
-                          strokeWidth={2}
-                          dot={false}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
-              <Card className="lg:col-span-3">
-                <CardHeader>
-                  <CardTitle>P&L per Aset</CardTitle>
-                </CardHeader>
-                <CardContent className="pl-2">
-                  <ChartContainer config={{}} className="h-[350px] w-full">
-                    <ResponsiveContainer>
-                      <BarChart data={analytics.pnlPerAsset}>
-                        <CartesianGrid vertical={false} />
-                        <XAxis
-                          dataKey="ticker"
-                          tickLine={false}
-                          axisLine={false}
-                          tickMargin={8}
-                        />
-                        <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                        <Tooltip
-                          cursor={false}
-                          content={
-                            <ChartTooltipContent
-                              formatter={(value) => formatCurrency(Number(value))}
-                            />
-                          }
-                        />
-                        <Bar dataKey="pnl" radius={8}>
-                          {analytics.pnlPerAsset && analytics.pnlPerAsset.map((entry, index) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={
-                                entry.pnl >= 0
-                                  ? 'hsl(var(--primary))'
-                                  : 'hsl(var(--destructive))'
-                              }
-                            />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
-            </div>
-          </>
-        )}
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
+            <Card className="lg:col-span-4">
+              <CardHeader>
+                <CardTitle>Kurva Ekuitas</CardTitle>
+              </CardHeader>
+              <CardContent className="pl-2">
+                <Skeleton className="h-[350px] w-full" />
+              </CardContent>
+            </Card>
+            <Card className="lg:col-span-3">
+              <CardHeader>
+                <CardTitle>P&L per Aset</CardTitle>
+              </CardHeader>
+              <CardContent className="pl-2">
+                <Skeleton className="h-[350px] w-full" />
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      ) : !analytics || !analytics.equityCurve || analytics.equityCurve.length === 0 ? (
+        <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm h-64">
+          <div className="flex flex-col items-center gap-1 text-center">
+            <h3 className="text-2xl font-bold tracking-tight">
+              Belum ada data trade
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Tambah trade baru untuk melihat analitik performa Anda.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+            {renderKpiCards()}
+          </div>
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
+            <Card className="lg:col-span-4">
+              <CardHeader>
+                <CardTitle>Kurva Ekuitas</CardTitle>
+              </CardHeader>
+              <CardContent className="pl-2">
+                <ChartContainer config={{}} className="h-[350px] w-full">
+                  <ResponsiveContainer>
+                    <LineChart data={analytics.equityCurve}>
+                      <CartesianGrid vertical={false} />
+                      <XAxis
+                        dataKey="date"
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
+                      />
+                      <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                      <Tooltip
+                        cursor={false}
+                        content={
+                          <ChartTooltipContent
+                            formatter={(value) => formatCurrency(Number(value))}
+                          />
+                        }
+                      />
+                      <Line
+                        dataKey="equity"
+                        type="monotone"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+            <Card className="lg:col-span-3">
+              <CardHeader>
+                <CardTitle>P&L per Aset</CardTitle>
+              </CardHeader>
+              <CardContent className="pl-2">
+                <ChartContainer config={{}} className="h-[350px] w-full">
+                  <ResponsiveContainer>
+                    <BarChart data={analytics.pnlPerAsset}>
+                      <CartesianGrid vertical={false} />
+                      <XAxis
+                        dataKey="ticker"
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
+                      />
+                      <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                      <Tooltip
+                        cursor={false}
+                        content={
+                          <ChartTooltipContent
+                            formatter={(value) => formatCurrency(Number(value))}
+                          />
+                        }
+                      />
+                      <Bar dataKey="pnl" radius={8}>
+                        {analytics.pnlPerAsset && analytics.pnlPerAsset.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={
+                              entry.pnl >= 0
+                                ? 'hsl(var(--primary))'
+                                : 'hsl(var(--destructive))'
+                            }
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      )}
     </div>
   );
 }
