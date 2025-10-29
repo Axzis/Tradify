@@ -78,13 +78,18 @@ export default function NewTradeForm({ onSuccess }: NewTradeFormProps) {
   const form = useForm<TradeFormData>({
     resolver: zodResolver(tradeSchema),
     defaultValues: {
+      ticker: '',
       assetType: 'Saham',
       position: 'Long',
       commission: 0,
-      executionRating: 5,
       strategy: 'Breakout',
       journalNotes: '',
-      ticker: '',
+      executionRating: 5,
+      openDate: undefined,
+      closeDate: undefined,
+      entryPrice: undefined,
+      exitPrice: undefined,
+      positionSize: undefined,
     },
   });
 
