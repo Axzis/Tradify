@@ -16,7 +16,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase';
 import { firestore } from '@/firebase/config';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  where,
+  orderBy,
+  limit,
+  getDocs,
+} from 'firebase/firestore';
 import { CalendarIcon, Loader2 } from 'lucide-react';
 import {
   Form,
@@ -34,18 +43,15 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 import { format, setHours, setMinutes } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { ChangeEvent } from 'react';
+import { ChangeEvent, useCallback, useEffect } from 'react';
+import { AssetType, Trade } from '@/types/trade';
 
 const tradeSchema = z
   .object({
     ticker: z.string().min(1, 'Simbol/Ticker tidak boleh kosong'),
     assetType: z.enum(['Saham', 'Kripto', 'Forex']),
-    openDate: z.date({
-      required_error: 'Tanggal buka tidak boleh kosong.',
-    }),
-    closeDate: z.date({
-      required_error: 'Tanggal tutup tidak boleh kosong.',
-    }),
+    openDate: z.date().optional(),
+    closeDate: z.date().optional(),
     position: z.enum(['Long', 'Short']),
     entryPrice: z.coerce.number().positive('Harga masuk harus positif'),
     exitPrice: z.coerce.number().positive('Harga keluar harus positif'),
@@ -57,10 +63,18 @@ const tradeSchema = z
     journalNotes: z.string().optional(),
     executionRating: z.coerce.number().min(1).max(5),
   })
-  .refine((data) => data.closeDate > data.openDate, {
-    message: 'Tanggal tutup harus setelah tanggal buka.',
-    path: ['closeDate'],
-  })
+  .refine(
+    (data) => {
+      if (data.openDate && data.closeDate) {
+        return data.closeDate > data.openDate;
+      }
+      return true;
+    },
+    {
+      message: 'Tanggal tutup harus setelah tanggal buka.',
+      path: ['closeDate'],
+    }
+  )
   .refine((data) => data.exitPrice !== data.entryPrice, {
     message: 'Harga keluar tidak boleh sama dengan harga masuk.',
     path: ['exitPrice'],
@@ -97,7 +111,38 @@ export default function NewTradeForm({ onSuccess }: NewTradeFormProps) {
     handleSubmit,
     reset,
     formState: { isSubmitting },
+    setValue,
   } = form;
+
+  const handleTickerBlur = useCallback(async (ticker: string) => {
+    if (!user || !ticker) return;
+
+    try {
+      const tradesCollectionRef = collection(firestore, 'users', user.uid, 'trades');
+      const q = query(
+        tradesCollectionRef,
+        where('ticker', '==', ticker.toUpperCase()),
+        orderBy('createdAt', 'desc'),
+        limit(1)
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const lastTrade = querySnapshot.docs[0].data() as Trade;
+        if (lastTrade.assetType) {
+          setValue('assetType', lastTrade.assetType);
+          toast({
+            title: 'Template Terisi',
+            description: `Tipe aset untuk ${ticker} diatur menjadi "${lastTrade.assetType}".`,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching last trade by ticker:", error);
+    }
+  }, [user, setValue, toast]);
+
 
   const onSubmit = async (data: TradeFormData) => {
     if (!user) {
@@ -118,6 +163,7 @@ export default function NewTradeForm({ onSuccess }: NewTradeFormProps) {
       );
       await addDoc(tradesCollectionRef, {
         ...data,
+        ticker: data.ticker.toUpperCase(),
         userId: user.uid,
         createdAt: serverTimestamp(),
       });
@@ -158,7 +204,7 @@ export default function NewTradeForm({ onSuccess }: NewTradeFormProps) {
               <FormItem>
                 <FormLabel>Simbol/Ticker</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input {...field} onBlur={() => handleTickerBlur(field.value)} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -173,7 +219,7 @@ export default function NewTradeForm({ onSuccess }: NewTradeFormProps) {
                 <FormLabel>Tipe Aset</FormLabel>
                 <Select
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
+                  value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -221,7 +267,7 @@ export default function NewTradeForm({ onSuccess }: NewTradeFormProps) {
             name="openDate"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Tanggal & Waktu Buka</FormLabel>
+                <FormLabel>Tanggal & Waktu Buka (Opsional)</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -284,7 +330,7 @@ export default function NewTradeForm({ onSuccess }: NewTradeFormProps) {
             name="closeDate"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Tanggal & Waktu Tutup</FormLabel>
+                <FormLabel>Tanggal & Waktu Tutup (Opsional)</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>

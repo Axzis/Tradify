@@ -29,17 +29,8 @@ import {
 } from '@/components/ui/chart';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, TrendingDown, Percent, Wallet, Goal } from 'lucide-react';
+import { Trade } from '@/types/trade';
 
-interface Trade {
-  id: string;
-  ticker: string;
-  position: 'Long' | 'Short';
-  exitPrice: number;
-  entryPrice: number;
-  positionSize: number;
-  commission: number;
-  closeDate: Timestamp | Date;
-}
 
 interface TradeAnalyticsSummary {
   totalNetPnl: number;
@@ -52,15 +43,16 @@ interface TradeAnalyticsSummary {
 }
 
 const calculatePnL = (trade: Trade) => {
+  if (!trade.entryPrice || !trade.exitPrice || !trade.positionSize) return 0;
   let pnl;
   if (trade.position === 'Long') {
     pnl =
       (trade.exitPrice - trade.entryPrice) * trade.positionSize -
-      trade.commission;
+      (trade.commission || 0);
   } else {
     pnl =
       (trade.entryPrice - trade.exitPrice) * trade.positionSize -
-      trade.commission;
+      (trade.commission || 0);
   }
   return pnl;
 };
@@ -78,17 +70,33 @@ const calculateAnalytics = (trades: Trade[]): TradeAnalyticsSummary => {
     };
   }
 
-  const tradesWithPnl = trades.map(trade => ({
-    ...trade,
-    pnl: calculatePnL(trade),
-    closeDateObject: new Date(trade.closeDate as any),
-  })).sort((a, b) => a.closeDateObject.getTime() - b.closeDateObject.getTime());
+  const tradesWithPnl = trades
+    .filter(trade => trade.closeDate) // Only include trades with a close date
+    .map(trade => ({
+      ...trade,
+      pnl: calculatePnL(trade),
+      closeDateObject: new Date(trade.closeDate as any),
+    }))
+    .sort((a, b) => a.closeDateObject.getTime() - b.closeDateObject.getTime());
+  
+  if (tradesWithPnl.length === 0) {
+     return {
+      totalNetPnl: 0,
+      winRate: 0,
+      profitFactor: 0,
+      avgWin: 0,
+      avgLoss: 0,
+      equityCurve: [],
+      pnlPerAsset: [],
+    };
+  }
+
 
   const totalNetPnl = tradesWithPnl.reduce((acc, trade) => acc + trade.pnl, 0);
   const winningTrades = tradesWithPnl.filter(trade => trade.pnl > 0);
   const losingTrades = tradesWithPnl.filter(trade => trade.pnl < 0);
 
-  const winRate = (winningTrades.length / trades.length) * 100;
+  const winRate = (winningTrades.length / tradesWithPnl.length) * 100;
   
   const totalGains = winningTrades.reduce((acc, trade) => acc + trade.pnl, 0);
   const totalLosses = Math.abs(losingTrades.reduce((acc, trade) => acc + trade.pnl, 0));

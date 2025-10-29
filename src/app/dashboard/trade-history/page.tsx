@@ -52,37 +52,23 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Star, Trash, Pencil, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-interface Trade {
-  id: string;
-  ticker: string;
-  position: 'Long' | 'Short';
-  exitPrice: number;
-  entryPrice: number;
-  positionSize: number;
-  commission: number;
-  closeDate: Timestamp;
-  openDate: Timestamp;
-  createdAt: Timestamp;
-  strategy?: string;
-  journalNotes?: string;
-  executionRating?: number;
-  assetType: string;
-}
+import { Trade } from '@/types/trade';
 
 const calculatePnL = (trade: Trade) => {
+  if (!trade.entryPrice || !trade.exitPrice || !trade.positionSize) return 0;
   let pnl;
   if (trade.position === 'Long') {
     pnl =
       (trade.exitPrice - trade.entryPrice) * trade.positionSize -
-      trade.commission;
+      (trade.commission || 0);
   } else {
     pnl =
       (trade.entryPrice - trade.exitPrice) * trade.positionSize -
-      trade.commission;
+      (trade.commission || 0);
   }
   return pnl;
 };
+
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('id-ID', {
@@ -128,7 +114,8 @@ const formatDate = (date: any): string => {
   });
 };
 
-const RenderRating = memo(({ rating }: { rating: number }) => {
+const RenderRating = memo(({ rating }: { rating?: number }) => {
+  const effectiveRating = rating || 0;
   return (
     <div className="flex items-center gap-1">
       {Array.from({ length: 5 }).map((_, i) => (
@@ -136,7 +123,7 @@ const RenderRating = memo(({ rating }: { rating: number }) => {
           key={i}
           className={cn(
             'h-4 w-4',
-            i < rating
+            i < effectiveRating
               ? 'text-yellow-400 fill-yellow-400'
               : 'text-muted-foreground'
           )}
@@ -353,7 +340,7 @@ export default function TradeHistoryPage() {
                   <div>
                     <span className="text-muted-foreground">Rating: </span>
                     <RenderRating
-                      rating={selectedTrade.executionRating || 0}
+                      rating={selectedTrade.executionRating}
                     />
                   </div>
                 </div>
