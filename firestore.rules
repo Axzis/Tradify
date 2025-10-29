@@ -1,0 +1,83 @@
+/**
+ * @fileoverview Firestore Security Rules for Tradify application.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model. Each user can only access their own data.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profiles.
+ * - /users/{userId}/equityTransactions/{transactionId}: Stores equity transactions for each user.
+ *
+ * Key Security Decisions:
+ * - Users can only create, read, update, and delete their own user document.
+ * - Users can only create, read, update, and delete equity transactions under their user document.
+ * - No user listing is allowed to prevent information disclosure.
+ *
+ * Denormalization for Authorization:
+ * - The `userId` is present in both the user document path and the `EquityTransaction` document, making authorization straightforward.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Protects user profiles. Only the authenticated user can manage their own profile.
+     * @path /users/{userId}
+     * @allow (create) - User with ID 'user123' can create their profile if authenticated as 'user123'.
+     * @allow (get, update, delete) - User with ID 'user123' can access their profile if authenticated as 'user123'.
+     * @deny (create, get, update, delete) - User with ID 'user456' cannot access profile 'user123'.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId} {
+      // Helper function to check if the user is signed in and owns the resource.
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      // Allow the user to create their own profile if the UID matches the document ID.
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+
+      // Allow the user to read their own profile.
+      allow get: if isOwner(userId);
+
+      // Allow the user to update their own profile, enforcing immutability of the id field.
+      allow update: if isOwner(userId) && resource.data.id == request.resource.data.id;
+
+      // Allow the user to delete their own profile.
+      allow delete: if isOwner(userId) && resource != null;
+
+      // Prevent listing of all users.
+      allow list: if false;
+    }
+
+    /**
+     * @description Protects equity transactions for each user. Only the authenticated user can manage their own transactions.
+     * @path /users/{userId}/equityTransactions/{transactionId}
+     * @allow (create) - User with ID 'user123' can create an equity transaction under their profile.
+     * @allow (get, update, delete) - User with ID 'user123' can access equity transaction 'tx1' under their profile.
+     * @deny (create, get, update, delete) - User with ID 'user456' cannot access equity transaction 'tx1' under profile 'user123'.
+     * @principle Enforces document ownership and data consistency.
+     */
+    match /users/{userId}/equityTransactions/{transactionId} {
+      // Helper function to check if the user is signed in and owns the resource.
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      // Allow the user to create an equity transaction if the userId matches the path.
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+
+      // Allow the user to get their own equity transaction.
+      allow get: if isOwner(userId);
+
+      // Allow the user to update their own equity transaction, enforcing immutability of the userId field.
+      allow update: if isOwner(userId) && resource != null && resource.data.userId == request.resource.data.userId;
+
+      // Allow the user to delete their own equity transaction.
+      allow delete: if isOwner(userId) && resource != null;
+
+      // Allow the user to list their own equity transactions.
+      allow list: if isOwner(userId);
+    }
+  }
+}

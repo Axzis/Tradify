@@ -1,0 +1,114 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the Tradify application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "registrationDate": {
+          "type": "string",
+          "description": "Date and time when the user registered.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "registrationDate"
+      ]
+    },
+    "EquityTransaction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "EquityTransaction",
+      "type": "object",
+      "description": "Represents a transaction affecting the user's equity (modal).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the equity transaction."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N EquityTransaction)"
+        },
+        "transactionType": {
+          "type": "string",
+          "description": "Type of equity transaction (deposit, transfer, profit)."
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount of the equity transaction."
+        },
+        "transactionDate": {
+          "type": "string",
+          "description": "Date and time of the equity transaction.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "transactionType",
+        "amount",
+        "transactionDate"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles.  Path-based ownership ensures only the authenticated user can access their profile.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/equityTransactions/{transactionId}",
+        "definition": {
+          "entityName": "EquityTransaction",
+          "schema": {
+            "$ref": "#/backend/entities/EquityTransaction"
+          },
+          "description": "Stores equity transactions for each user. Path-based ownership ensures only the authenticated user can access their equity transactions.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "transactionId",
+              "description": "The unique identifier for the equity transaction."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to store user data and equity transactions. User data is stored in a dedicated collection `/users/{userId}`. Equity transactions are stored in a subcollection `/users/{userId}/equityTransactions/{transactionId}`. This structure prioritizes authorization independence and supports the required QAPs by leveraging path-based ownership for user data and transactions. Each user's data and transactions are isolated, ensuring secure list operations and clear ownership."
+  }
+}
