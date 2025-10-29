@@ -119,27 +119,37 @@ export default function NewTradeForm({ onSuccess }: NewTradeFormProps) {
 
     try {
       const tradesCollectionRef = collection(firestore, 'users', user.uid, 'trades');
+      // Modified query: Removed orderBy to prevent requiring a composite index.
+      // We will sort on the client-side.
       const q = query(
         tradesCollectionRef,
         where('ticker', '==', ticker.toUpperCase()),
-        orderBy('createdAt', 'desc'),
-        limit(1)
+        limit(10) // Fetch a few recent ones to be safe
       );
 
       const querySnapshot = await getDocs(q);
 
       if (!querySnapshot.empty) {
-        const lastTrade = querySnapshot.docs[0].data() as Trade;
+        const trades = querySnapshot.docs.map(doc => doc.data() as Trade);
+        // Sort on the client side to find the most recent trade
+        trades.sort((a, b) => {
+            const timeA = a.createdAt?.toMillis() || 0;
+            const timeB = b.createdAt?.toMillis() || 0;
+            return timeB - timeA;
+        });
+        
+        const lastTrade = trades[0];
         if (lastTrade.assetType) {
           setValue('assetType', lastTrade.assetType);
           toast({
             title: 'Template Terisi',
-            description: `Tipe aset untuk ${ticker} diatur menjadi "${lastTrade.assetType}".`,
+            description: `Tipe aset untuk ${ticker.toUpperCase()} diatur menjadi "${lastTrade.assetType}".`,
           });
         }
       }
     } catch (error) {
       console.error("Error fetching last trade by ticker:", error);
+      // We don't show a toast here to avoid bothering the user if the feature fails.
     }
   }, [user, setValue, toast]);
 
